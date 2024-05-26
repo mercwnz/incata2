@@ -6,6 +6,7 @@ from datetime import datetime
 from threading import Event
 from gps.devices import DEVICES as GPS_DEVICES
 from gps.nmea import NMEA
+from config import MAX_ENTRIES, BAUD_RATE_GPS
 
 def format_field(name, value):
     name_width = 20
@@ -35,55 +36,66 @@ def print_data(data):
     output += "\n" + "-" * 40
     print(output)
 
-def read_gps_data(port, nmea_parser, should_exit):
-    try:
-        with serial.Serial(port, baudrate=9600, timeout=1) as ser:
-            print(f"Connected to GPS device on port: {port}")
-            last_fix_time = time.time()
-            while not should_exit.is_set():
-                line = ser.readline().decode('ascii', errors='replace')
-                if line:
-                    nmea_parser.parse_sentence(line)
-                    last_sentence_type = nmea_parser.get_last_sentence_type()
+def read_gps_data(serial_port, nmea_parser, should_exit, max_entries, baud_rate):
+    entries_count = 0
+    last_data_time = time.time()
+    while not should_exit.is_set() and entries_count < max_entries:
+        line = serial_port.readline().decode('ascii', errors='replace')
+        if line:
+            nmea_parser.parse_sentence(line)
+            last_sentence_type = nmea_parser.get_last_sentence_type()
 
-                    if last_sentence_type in ['GPGGA', 'GPVTG']:
-                        print_data(nmea_parser.get_data())
+            if last_sentence_type in ['GPGGA', 'GPVTG']:
+                print_data(nmea_parser.get_data())
+                entries_count += 1
+                last_data_time = time.time()
 
-                    if "$GPGGA" in line and ",0," not in line:
-                        last_fix_time = time.time()
+            if "$GPGGA" in line and ",0," not in line:
+                last_data_time = time.time()
 
-                if time.time() - last_fix_time > 60:
-                    print("No valid fix for 60 seconds, reconnecting...")
-                    ser.close()
-                    time.sleep(1)
-                    ser.open()
-                    last_fix_time = time.time()
+        if time.time() - last_data_time > 10:
+            print("No raw data received for 10 seconds, reconnecting...")
+            serial_port.close()
+            time.sleep(1)
+            serial_port.open()
+            last_data_time = time.time()
 
-    except serial.SerialException as e:
-        print(f"Could not open serial port {port}: {e}")
-    except KeyboardInterrupt:
-        print("Exiting...")
-
-def connect_and_read_gps(debug=False):
+def connect_to_gps_device(max_retries=MAX_ENTRIES, debug=False):
     gps_devices = GPS_DEVICES()
     found_devices = gps_devices.find_gps_devices()
     if not found_devices:
         print("No GPS devices found.")
         return None
-    else:
+    
+    retries = 0
+    while retries < max_retries:
         print("Found GPS devices:")
         for device in found_devices:
             print(f"Port: {device[0]}, Description: {device[1]}")
-            # Test the device before attempting to read data
             result = gps_devices.test_device(device, debug=debug)
             print(result)
             if "NMEA response" in result:
-                # Use the first valid device's port
-                port = device[0]
-                nmea_parser = NMEA()
-                should_exit = Event()
-                read_gps_data(port, nmea_parser, should_exit)
-                break
+                return device[0]
+        retries += 1
+        print(f"Invalid response. Retrying... {retries} / {max_retries}")
+        time.sleep(1)
+
+    print("Max retries reached. Could not find a valid GPS device.")
+    return None
+
+def main(debug=False):
+    port = connect_to_gps_device(debug=debug)
+    if port:
+        nmea_parser = NMEA()
+        should_exit = Event()
+        try:
+            with serial.Serial(port, baudrate=BAUD_RATE_GPS, timeout=1) as serial_port:
+                print(f"Connected to GPS device on port: {port}")
+                read_gps_data(serial_port, nmea_parser, should_exit, MAX_ENTRIES, BAUD_RATE_GPS)
+        except serial.SerialException as e:
+            print(f"Could not open serial port {port}: {e}")
+        except KeyboardInterrupt:
+            print("Exiting...")
 
 if __name__ == "__main__":
-    connect_and_read_gps(debug=True)
+    main(debug=True)
