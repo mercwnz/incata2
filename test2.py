@@ -36,22 +36,22 @@ def print_data(data):
     output += "\n" + "-" * 40
     print(output)
 
-def read_gps_data(serial_port, nmea_parser, should_exit, max_entries, baud_rate):
+def read_gps_data(serial_port, nmea_parser, should_exit, max_entries):
     entries_count = 0
     last_data_time = time.time()
     while not should_exit.is_set() and entries_count < max_entries:
-        line = serial_port.readline().decode('ascii', errors='replace')
-        if line:
-            nmea_parser.parse_sentence(line)
-            last_sentence_type = nmea_parser.get_last_sentence_type()
+        line = serial_port.readline().decode('ascii', errors='replace').strip()
+        if line.startswith('$') and '*' in line:
+            if nmea_parser.parse_sentence(line):
+                last_sentence_type = nmea_parser.get_last_sentence_type()
 
-            if last_sentence_type in ['GPGGA', 'GPVTG']:
-                print_data(nmea_parser.get_data())
-                entries_count += 1
-                last_data_time = time.time()
+                if last_sentence_type in ['GPGGA', 'GPVTG']:
+                    print_data(nmea_parser.get_data())
+                    entries_count += 1
+                    last_data_time = time.time()
 
-            if "$GPGGA" in line and ",0," not in line:
-                last_data_time = time.time()
+                if "$GPGGA" in line and ",0," not in line:
+                    last_data_time = time.time()
 
         if time.time() - last_data_time > 10:
             print("No raw data received for 10 seconds, reconnecting...")
@@ -91,7 +91,7 @@ def main(debug=False):
         try:
             with serial.Serial(port, baudrate=BAUD_RATE_GPS, timeout=1) as serial_port:
                 print(f"Connected to GPS device on port: {port}")
-                read_gps_data(serial_port, nmea_parser, should_exit, MAX_ENTRIES, BAUD_RATE_GPS)
+                read_gps_data(serial_port, nmea_parser, should_exit, MAX_ENTRIES)
         except serial.SerialException as e:
             print(f"Could not open serial port {port}: {e}")
         except KeyboardInterrupt:

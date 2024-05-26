@@ -26,7 +26,7 @@ class NMEA:
     def moving_average(self, queue):
         return sum(queue) / len(queue) if queue else 0
 
-    def parse_sentence(self, sentence, cursor=None):
+    def parse_sentence(self, sentence):
         try:
             if "*" not in sentence:
                 raise ValueError("Sentence does not contain a checksum delimiter (*)")
