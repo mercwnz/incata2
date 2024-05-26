@@ -1,5 +1,3 @@
-# test2.py
-
 import serial
 import time
 from datetime import datetime
@@ -35,6 +33,20 @@ def print_data(data):
     output = "\n".join(format_field(name, value) for name, value in fields)
     output += "\n" + "-" * 40
     print(output)
+
+def initialize_gps_device(port):
+    try:
+        print(f"Resetting GPS device at {port}...")
+        # Reset the GPS device
+        subprocess.run(['stty', '-F', port, '4800', 'sane'])
+        # Send initialization commands if needed
+        with serial.Serial(port, baudrate=4800, timeout=1) as ser:
+            ser.write(b'$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n')
+            ser.write(b'$PMTK220,1000*1F\r\n')  # Set update rate to 1Hz
+        time.sleep(2)
+        print(f"GPS device initialized at {port}")
+    except Exception as e:
+        print(f"Failed to initialize GPS device at {port}: {e}")
 
 def read_gps_data(serial_port, nmea_parser, should_exit, max_entries):
     entries_count = 0
@@ -72,6 +84,8 @@ def connect_to_gps_device(max_retries=MAX_ENTRIES, debug=False):
         print("Found GPS devices:")
         for device in found_devices:
             print(f"Port: {device[0]}, Description: {device[1]}")
+            # Initialize the device
+            initialize_gps_device(device[0])
             result = gps_devices.test_device(device, debug=debug)
             print(result)
             if "NMEA response" in result:
