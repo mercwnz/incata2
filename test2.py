@@ -1,5 +1,8 @@
+# test2.py
+
 import serial
 import time
+import subprocess
 from datetime import datetime
 from threading import Event
 from gps.devices import DEVICES as GPS_DEVICES
