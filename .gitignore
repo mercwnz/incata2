@@ -10,3 +10,4 @@ devenv.local.nix
 venv/
 
 __pycache__/
+.DS_Store
