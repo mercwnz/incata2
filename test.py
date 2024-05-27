@@ -1,6 +1,5 @@
 # test.py
 
-import sys
 import argparse
 import serial.tools.list_ports
 from gps.devices import DEVICES as GPS_DEVICES

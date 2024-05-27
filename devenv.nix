@@ -1,21 +1,27 @@
 { pkgs, lib, config, inputs, ... }:
 
 {
-  # https://devenv.sh/basics/
   env.GREET = "devenv";
 
-  # https://devenv.sh/packages/
   packages = [ pkgs.git ];
 
-  # https://devenv.sh/scripts/
-  scripts.hello.exec = "echo hello from $GREET";
-
   enterShell = ''
-    hello
     git --version
+    python -V
+    cat << "EOF"
+
+$$\                               $$\                $$$$$$\  
+\__|                              $$ |              $$  __$$\ 
+$$\ $$$$$$$\   $$$$$$$\ $$$$$$\ $$$$$$\    $$$$$$\  \__/  $$ |
+$$ |$$  __$$\ $$  _____|\____$$\\_$$  _|   \____$$\  $$$$$$  |
+$$ |$$ |  $$ |$$ /      $$$$$$$ | $$ |     $$$$$$$ |$$  ____/ 
+$$ |$$ |  $$ |$$ |     $$  __$$ | $$ |$$\ $$  __$$ |$$ |      
+$$ |$$ |  $$ |\$$$$$$$\\$$$$$$$ | \$$$$  |\$$$$$$$ |$$$$$$$$\ 
+\__|\__|  \__| \_______|\_______|  \____/  \_______|\________|
+
+EOF
   '';
 
-  # https://devenv.sh/tests/
   enterTest = ''
     echo "Running tests"
     git --version | grep "2.42.0"
@@ -26,21 +32,11 @@
     version = "3.12.3";
     venv = {
       enable = true;
-      requirements =  (lib.strings.fileContents ./requirements.txt);
+      requirements = ''
+        pyserial
+        gps3
+        obd
+      '';
     };
   };
-
-  # https://devenv.sh/services/
-  # services.postgres.enable = true;
-
-  # https://devenv.sh/languages/
-  # languages.nix.enable = true;
-
-  # https://devenv.sh/pre-commit-hooks/
-  # pre-commit.hooks.shellcheck.enable = true;
-
-  # https://devenv.sh/processes/
-  # processes.ping.exec = "ping example.com";
-
-  # See full reference at https://devenv.sh/reference/options/
 }
