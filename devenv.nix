@@ -21,6 +21,15 @@
     git --version | grep "2.42.0"
   '';
 
+  languages.python = {
+    enable = true;
+    version = "3.12.3";
+    venv = {
+      enable = true;
+      requirements =  (lib.strings.fileContents ./requirements.txt);
+    };
+  };
+
   # https://devenv.sh/services/
   # services.postgres.enable = true;
 

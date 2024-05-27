@@ -1,9 +1,12 @@
 # gps/devices.py
 
+import time
+
 import serial
 import serial.tools.list_ports
-import time
+
 from .nmea import NMEA
+
 
 class DEVICES:
     def __init__(self):
@@ -19,17 +22,19 @@ class DEVICES:
     def test_device(self, device, wait_time=10, debug=False):
         baudrate = 9600
         nmea_parser = NMEA()
-        command = b'\xB5\x62'  # Example U-Blox command
+        command = b"\xb5\x62"  # Example U-Blox command
         line_count = 0
         try:
             with serial.Serial(device[0], baudrate=baudrate, timeout=1) as ser:
-                print(f"Connected to GPS device on port: {device[0]} at {baudrate} baud")
+                print(
+                    f"Connected to GPS device on port: {device[0]} at {baudrate} baud"
+                )
                 if debug:
                     print(f"Sending command to GPS device: {command}")
                 ser.write(command)
                 start_time = time.time()
                 while line_count < 10 and (time.time() - start_time < wait_time):
-                    line = ser.readline().decode('ascii', errors='replace').strip()
+                    line = ser.readline().decode("ascii", errors="replace").strip()
                     if line:
                         line_count += 1
                         if debug:
