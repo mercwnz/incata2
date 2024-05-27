@@ -1,7 +1,6 @@
 # gps/nmea.py
 
 import time
-from datetime import datetime
 from collections import deque
 
 class NMEA:
