@@ -29,7 +29,7 @@ EOF
 
   languages.python = {
     enable = true;
-    version = "3.12.3";
+    version = "3.10";
     venv = {
       enable = true;
       requirements = ''
