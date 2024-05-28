@@ -39,6 +39,4 @@ EOF
       '';
     };
   };
-
-  cachix.enable = false;
 }
