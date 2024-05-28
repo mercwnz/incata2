@@ -1,42 +1,32 @@
-{
-  pkgs, lib, config, inputs, ...
-}:
+{ pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-21.11.tar.gz") {} }:
 
-{
-  env = {
-    GREET = "devenv";
-  };
+let
+  pythonEnv = pkgs.python310.withPackages (ps: with ps; [
+    ps.pyserial
+    ps.gps3
+    ps.obd
+  ]);
+in
+pkgs.mkShell {
+  buildInputs = [
+    pkgs.git
+    pythonEnv
+  ];
 
-  packages = [ pkgs.git ];
-
-  enterShell = ''
-    git --version
-    python -V
+  shellHook = ''
+    export GREET="devenv"
+    echo "Environment variable GREET is set to $GREET"
+    echo "Python version: $(python -V)"
+    echo "Git version: $(git --version)"
     cat << "EOF"
     _______  ________  ________  ________  ________  ________
   _╱       ╲╱        ╲╱    ╱   ╲╱        ╲╱    ╱   ╲╱    ╱   ╲
  ╱         ╱         ╱         ╱         ╱         ╱         ╱
 ╱         ╱        _╱╲        ╱        _╱         ╱╲        ╱
 ╲________╱╲________╱  ╲______╱╲________╱╲__╱_____╱  ╲______╱
-
 EOF
-  '';
 
-  enterTest = ''
     echo "Running tests"
     git --version | grep "2.42.0"
   '';
-
-  languages.python = {
-    enable = true;
-    version = "3.12.3";
-    venv = {
-      enable = true;
-      requirements = ''
-        pyserial
-        gps3
-        obd
-      '';
-    };
-  };
 }
