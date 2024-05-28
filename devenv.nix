@@ -1,17 +1,25 @@
-{
-  pkgs, lib, config, inputs, ...
-}:
 
-{
-  env = {
-    GREET = "devenv";
-  };
+{ pkgs ? import <nixpkgs> {} }:
 
-  packages = [ pkgs.git ];
+let
+  # Define the Python environment with required packages
+  pythonEnv = pkgs.python3.withPackages (ps: with ps; [
+    pyserial
+    gps3
+    obd
+  ]);
+in
+pkgs.mkShell {
+  buildInputs = [
+    pkgs.git
+    pythonEnv
+  ];
 
-  enterShell = ''
-    git --version
-    python -V
+  shellHook = ''
+    export GREET="devenv"
+    echo "Environment variable GREET is set to $GREET"
+    echo "Python version: $(python -V)"
+    echo "Git version: $(git --version)"
     cat << "EOF"
     _______  ________  ________  ________  ________  ________
   _╱       ╲╱        ╲╱    ╱   ╲╱        ╲╱    ╱   ╲╱    ╱   ╲
@@ -20,23 +28,8 @@
 ╲________╱╲________╱  ╲______╱╲________╱╲__╱_____╱  ╲______╱
 
 EOF
-  '';
 
-  enterTest = ''
     echo "Running tests"
     git --version | grep "2.42.0"
   '';
-
-  languages.python = {
-    enable = true;
-    version = "3.12.3";
-    venv = {
-      enable = true;
-      requirements = ''
-        pyserial
-        gps3
-        obd
-      '';
-    };
-  };
 }
