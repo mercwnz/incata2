@@ -1,8 +1,9 @@
 import serial
 import struct
+import time
 
 class UBlox7:
-    def __init__(self, port, baudrate=9600):
+    def __init__(self, port='/dev/ttyACM0', baudrate=9600):
         self.serial = serial.Serial(port, baudrate, timeout=1)
         self.sync_chars = b'\xb5\x62'
 
@@ -51,13 +52,43 @@ class UBlox7:
         if msg_class == 0x06 and msg_id == 0x24:
             return struct.unpack('<B', payload)[0]
 
+    def initialize(self):
+        self.send_ubx_message(0x06, 0x04, b'\x00\x00')
+        time.sleep(1)  # Wait for the receiver to reset
+
+    def startup(self):
+        self.send_ubx_message(0x06, 0x04, b'\x01\x00')
+        time.sleep(1)  # Wait for the receiver to reset
+
+    def get_status(self):
+        self.send_ubx_message(0x01, 0x03, b'')
+        msg_class, msg_id, payload = self.receive_ubx_message()
+        if msg_class == 0x01 and msg_id == 0x03:
+            status = struct.unpack('<BBBBIBBBB', payload)
+            return status
+
     def close(self):
         self.serial.close()
 
 # Example usage
 if __name__ == "__main__":
-    ublox = UBlox7(port='/dev/ttyUSB0', baudrate=9600)
-    ublox.set_nav_mode(2)  # Set navigation mode to Pedestrian
+    ublox = UBlox7(port='/dev/ttyACM0', baudrate=9600)
+    
+    # Initialize the receiver
+    ublox.initialize()
+    print("Receiver initialized")
+    
+    # Startup the receiver
+    ublox.startup()
+    print("Receiver started up")
+    
+    # Get and print receiver status
+    status = ublox.get_status()
+    print(f"Receiver status: {status}")
+    
+    # Set navigation mode to Pedestrian
+    ublox.set_nav_mode(2)
     nav_mode = ublox.get_nav_mode()
     print(f"Current navigation mode: {nav_mode}")
+    
     ublox.close()
