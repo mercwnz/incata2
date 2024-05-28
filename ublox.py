@@ -67,6 +67,48 @@ class UBlox7:
             status = struct.unpack('<BBBBIBBBB', payload)
             return status
 
+    def configure_port(self, port_id, baudrate, in_proto_mask, out_proto_mask):
+        payload = struct.pack('<BBHIIHH', port_id, 0, 0, baudrate, in_proto_mask, out_proto_mask, 0)
+        self.send_ubx_message(0x06, 0x00, payload)
+
+    def set_power_mode(self, mode):
+        payload = struct.pack('<B', mode)
+        self.send_ubx_message(0x06, 0x3B, payload)
+
+    def get_power_mode(self):
+        self.send_ubx_message(0x06, 0x3B, b'')
+        msg_class, msg_id, payload = self.receive_ubx_message()
+        if msg_class == 0x06 and msg_id == 0x3B:
+            return struct.unpack('<B', payload)[0]
+
+    def save_configuration(self):
+        payload = struct.pack('<III', 0xFFFF, 0x00, 0x00)
+        self.send_ubx_message(0x06, 0x09, payload)
+
+    def load_configuration(self):
+        payload = struct.pack('<III', 0x00, 0xFFFF, 0x00)
+        self.send_ubx_message(0x06, 0x09, payload)
+
+    def clear_configuration(self):
+        payload = struct.pack('<III', 0x00, 0x00, 0xFFFF)
+        self.send_ubx_message(0x06, 0x09, payload)
+
+    def get_antenna_status(self):
+        self.send_ubx_message(0x06, 0x13, b'')
+        msg_class, msg_id, payload = self.receive_ubx_message()
+        if msg_class == 0x06 and msg_id == 0x13:
+            return payload
+
+    def set_gnss_configuration(self, config):
+        payload = config
+        self.send_ubx_message(0x06, 0x3E, payload)
+
+    def get_gnss_configuration(self):
+        self.send_ubx_message(0x06, 0x3E, b'')
+        msg_class, msg_id, payload = self.receive_ubx_message()
+        if msg_class == 0x06 and msg_id == 0x3E:
+            return payload
+
     def close(self):
         self.serial.close()
 
@@ -90,5 +132,33 @@ if __name__ == "__main__":
     ublox.set_nav_mode(2)
     nav_mode = ublox.get_nav_mode()
     print(f"Current navigation mode: {nav_mode}")
+
+    # Configure the UART port
+    ublox.configure_port(port_id=1, baudrate=9600, in_proto_mask=0x01, out_proto_mask=0x01)
+    print("UART port configured")
+
+    # Set and get power mode
+    ublox.set_power_mode(1)
+    power_mode = ublox.get_power_mode()
+    print(f"Current power mode: {power_mode}")
+
+    # Save, load, and clear configuration
+    ublox.save_configuration()
+    print("Configuration saved")
+    ublox.load_configuration()
+    print("Configuration loaded")
+    ublox.clear_configuration()
+    print("Configuration cleared")
+
+    # Get antenna status
+    antenna_status = ublox.get_antenna_status()
+    print(f"Antenna status: {antenna_status}")
+
+    # Set and get GNSS configuration
+    gnss_config = b'\x00' * 32  # Example configuration payload
+    ublox.set_gnss_configuration(gnss_config)
+    print("GNSS configuration set")
+    current_gnss_config = ublox.get_gnss_configuration()
+    print(f"Current GNSS configuration: {current_gnss_config}")
     
     ublox.close()
