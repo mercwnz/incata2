@@ -29,7 +29,7 @@ EOF
 
   languages.python = {
     enable = true;
-    version = "3.12.3";
+    version = "3.12";
     venv = {
       enable = true;
       requirements = ''
@@ -39,7 +39,4 @@ EOF
       '';
     };
   };
-
-  cachix.enable = false;
-  
 }
