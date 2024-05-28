@@ -3,9 +3,9 @@
 let
   # Define the Python environment with required packages
   pythonEnv = pkgs.python3.withPackages (ps: with ps; [
-    pyserial
-    gps3
-    obd
+    ps.pyserial
+    ps.gps3
+    ps.obd
   ]);
 in
 pkgs.mkShell {
@@ -19,16 +19,5 @@ pkgs.mkShell {
     echo "Environment variable GREET is set to $GREET"
     echo "Python version: $(python -V)"
     echo "Git version: $(git --version)"
-    cat << "EOF"
-    _______  ________  ________  ________  ________  ________
-  _╱       ╲╱        ╲╱    ╱   ╲╱        ╲╱    ╱   ╲╱    ╱   ╲
- ╱         ╱         ╱         ╱         ╱         ╱         ╱
-╱         ╱        _╱╲        ╱        _╱         ╱╲        ╱
-╲________╱╲________╱  ╲______╱╲________╱╲__╱_____╱  ╲______╱
-
-EOF
-
-    echo "Running tests"
-    git --version | grep "2.42.0"
   '';
 }
