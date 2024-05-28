@@ -1,4 +1,6 @@
-{ pkgs, lib, config, inputs, ... }:
+{
+  pkgs, lib, config, inputs, ...
+}:
 
 {
   env = {
@@ -37,4 +39,6 @@ EOF
       '';
     };
   };
+
+  cachix.enable = false;
 }
