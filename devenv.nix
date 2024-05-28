@@ -8,12 +8,7 @@
   };
 
   packages = [ pkgs.git ];
-  {
-    packages = [ 
-      pkgs.pyserial 
-      pkgs.obd
-    ];
-  }
+
   enterShell = ''
     git --version
     python -V
@@ -37,6 +32,11 @@ EOF
     version = "3.12.3";
     venv = {
       enable = true;
+      requirements = ''
+        pyserial
+        gps3
+        obd
+      '';
     };
   };
 }
