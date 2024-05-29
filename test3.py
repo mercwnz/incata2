@@ -1,6 +1,10 @@
 import pyubx2
 import serial
 
+# https://github.com/semuconsulting/pyubx2/tree/master
+# https://github.com/semuconsulting/pyubx2/tree/master
+# https://github.com/semuconsulting/pyubx2/tree/master
+
 class ublox:
     def __init__(self, port, baudrate):
         self.port = port
