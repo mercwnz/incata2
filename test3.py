@@ -1,8 +1,23 @@
 import subprocess
 import time
 import threading
+import serial
+
+def is_port_available(port):
+    try:
+        ser = serial.Serial(port)
+        ser.close()
+        return True
+    except serial.SerialException:
+        return False
 
 def run_cgps_for_10_seconds():
+    port = '/dev/ttyACM0'
+    
+    if not is_port_available(port):
+        print(f"Error: Serial port {port} is busy or not available.")
+        return
+    
     try:
         print("Starting cgps...")
         # Start the cgps command
