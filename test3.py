@@ -38,7 +38,7 @@ def run_cgps_for_10_seconds():
 
         print("cgps is running. Output will be printed for 10 seconds.")
         # Run for 10 seconds
-        time.sleep(10)
+        time.sleep(60)
 
         print("Terminating cgps...")
         # Terminate the cgps process
