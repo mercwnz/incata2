@@ -37,7 +37,7 @@ def run_cgps_for_10_seconds():
     try:
         print("Starting cgps...")
         # Start the cgps command
-        process = subprocess.Popen(['cgps'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        process = subprocess.Popen(['cgps', "-s"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         # Function to read and print output from the cgps command
         def read_output():
