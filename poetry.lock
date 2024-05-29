@@ -35,6 +35,36 @@ uncertainties = ["uncertainties (>=3.1.6)"]
 xarray = ["xarray"]
 
 [[package]]
+name = "pynmeagps"
+version = "1.0.36"
+description = "NMEA protocol parser and generator"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pynmeagps-1.0.36-py3-none-any.whl", hash = "sha256:f43d4dcd7ded342e8c05b7c220669e20786cd4d91fe86ca3f5f1c01d354ddbe3"},
+    {file = "pynmeagps-1.0.36.tar.gz", hash = "sha256:3bad8b7605e7808a358b68d743ea854eb390ee704115f4ce9b12fc2518de2c17"},
+]
+
+[package.extras]
+deploy = ["build", "pip", "setuptools (>=66.0)", "wheel"]
+test = ["Sphinx", "bandit", "black", "isort", "pylint", "pytest", "pytest-cov", "sphinx-rtd-theme"]
+
+[[package]]
+name = "pyrtcm"
+version = "1.1.1"
+description = "RTCM3 protocol parser"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pyrtcm-1.1.1-py3-none-any.whl", hash = "sha256:b9918bcb3fe314602d4099f861eff7675817c39f37c448f2dce8b8006a0f6af7"},
+    {file = "pyrtcm-1.1.1.tar.gz", hash = "sha256:b8567ac8db123772907872db602362363c7b5e83a78c5b89a971a928a2b75f67"},
+]
+
+[package.extras]
+deploy = ["build", "pip", "setuptools (>=66.0)", "wheel"]
+test = ["Sphinx", "bandit", "black", "pylint", "pytest", "pytest-cov", "sphinx-rtd-theme"]
+
+[[package]]
 name = "pyserial"
 version = "3.5"
 description = "Python Serial Port Extension"
@@ -47,6 +77,25 @@ files = [
 
 [package.extras]
 cp2110 = ["hidapi"]
+
+[[package]]
+name = "pyubx2"
+version = "1.2.42"
+description = "UBX protocol parser and generator"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pyubx2-1.2.42-py3-none-any.whl", hash = "sha256:7eff6e5f93614d6312785d06bbf4cd4bd77cc869d06adced961299480494bb1e"},
+    {file = "pyubx2-1.2.42.tar.gz", hash = "sha256:de493f9d1911e15a1d058633f05848a288724937b64cdd1302c911952b2b66a3"},
+]
+
+[package.dependencies]
+pynmeagps = ">=1.0.36"
+pyrtcm = ">=1.1.1"
+
+[package.extras]
+deploy = ["build", "pip", "setuptools (>=66.0)", "wheel"]
+test = ["Sphinx", "bandit", "black", "isort", "pylint", "pytest", "pytest-cov", "sphinx-rtd-theme"]
 
 [[package]]
 name = "smbus2"
@@ -67,4 +116,4 @@ test = ["mock", "nose"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "5aba42abf397286183a34d5756f60afc224a8a59f3e2b9fd1c687c22daefb92d"
+content-hash = "f43bee62f66c3f3669ee749c8387e0a3515b23fb578bb9db6c725a5c51a27a2c"
