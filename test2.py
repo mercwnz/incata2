@@ -1,5 +1,3 @@
-# test2.py
-
 import serial
 import time
 from datetime import datetime
@@ -39,19 +37,25 @@ def print_data(data):
 def read_gps_data(serial_port, nmea_parser, should_exit, max_entries):
     entries_count = 0
     last_data_time = time.time()
+    buffer = b""
     while not should_exit.is_set() and entries_count < max_entries:
-        line = serial_port.readline().decode('utf-8', errors='ignore').strip()
-        if line.startswith('$') and '*' in line:
-            if nmea_parser.parse_sentence(line):
-                last_sentence_type = nmea_parser.get_last_sentence_type()
+        buffer += serial_port.read(serial_port.in_waiting or 1)
+        if b'\n' in buffer:
+            lines = buffer.split(b'\n')
+            buffer = lines[-1]  # Keep the last partial line in buffer
+            for line in lines[:-1]:
+                line = line.strip()
+                if line.startswith(b'$') and b'*' in line:
+                    if nmea_parser.parse_sentence(line.decode('ascii', errors='ignore')):
+                        last_sentence_type = nmea_parser.get_last_sentence_type()
 
-                if last_sentence_type in ['GPGGA', 'GPVTG']:
-                    print_data(nmea_parser.get_data())
-                    entries_count += 1
-                    last_data_time = time.time()
+                        if last_sentence_type in ['GPGGA', 'GPVTG']:
+                            print_data(nmea_parser.get_data())
+                            entries_count += 1
+                            last_data_time = time.time()
 
-                if "$GPGGA" in line and ",0," not in line:
-                    last_data_time = time.time()
+                        if b"$GPGGA" in line and b",0," not in line:
+                            last_data_time = time.time()
 
         if time.time() - last_data_time > 10:
             print("No raw data received for 10 seconds, reconnecting...")
