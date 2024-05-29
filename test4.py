@@ -4,7 +4,6 @@ import json
 def read_gps_data():
     # Start the gpspipe process
     process = subprocess.Popen(['gpspipe', '-r'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    nmea_parser = NMEA()
 
     try:
         while True:
