@@ -2,10 +2,7 @@
 
 {
   packages = [
-    # A python dependency outside of poetry.
-    config.languages.python.package.pkgs.pjsua2,
-
-    # Adding gpsd package
+    config.languages.python.package.pkgs.pjsua2
     pkgs.gpsd
   ];
 
