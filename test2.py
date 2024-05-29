@@ -40,7 +40,7 @@ def read_gps_data(serial_port, nmea_parser, should_exit, max_entries):
     entries_count = 0
     last_data_time = time.time()
     while not should_exit.is_set() and entries_count < max_entries:
-        line = serial_port.readline().decode().strip()
+        line = serial_port.readline().decode('utf-8', errors='ignore').strip()
         if line.startswith('$') and '*' in line:
             if nmea_parser.parse_sentence(line):
                 last_sentence_type = nmea_parser.get_last_sentence_type()

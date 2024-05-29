@@ -34,7 +34,7 @@ class DEVICES:
                 ser.write(command)
                 start_time = time.time()
                 while line_count < 10 and (time.time() - start_time < wait_time):
-                    line = ser.readline().decode(errors="replace").strip()
+                    line = ser.readline().decode('utf-8', errors='ignore').strip()
                     if line:
                         line_count += 1
                         if debug:

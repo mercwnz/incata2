@@ -37,7 +37,7 @@ class DEVICES:
                 ser.write(command)
                 start_time = time.time()
                 while time.time() - start_time < wait_time:
-                    line = ser.readline().decode().strip()
+                    line = ser.readline().decode('utf-8', errors='ignore').strip()
                     if debug:
                         print(line)
                     if 'ELM327' in line:
