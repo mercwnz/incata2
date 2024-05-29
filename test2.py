@@ -1,10 +1,11 @@
 import serial
 import time
 from datetime import datetime
-from threading import Event
+from threading import Event, Thread
 from gps.devices import DEVICES as GPS_DEVICES
 from gps.nmea import NMEA
 from config import MAX_ENTRIES, BAUD_RATE_GPS
+import io
 
 def format_field(name, value):
     name_width = 20
@@ -37,25 +38,27 @@ def print_data(data):
 def read_gps_data(serial_port, nmea_parser, should_exit, max_entries):
     entries_count = 0
     last_data_time = time.time()
-    buffer = b""
+    buffer = io.BytesIO()
     while not should_exit.is_set() and entries_count < max_entries:
-        buffer += serial_port.read(serial_port.in_waiting or 1)
-        if b'\n' in buffer:
-            lines = buffer.split(b'\n')
-            buffer = lines[-1]  # Keep the last partial line in buffer
-            for line in lines[:-1]:
-                line = line.strip()
-                if line.startswith(b'$') and b'*' in line:
-                    if nmea_parser.parse_sentence(line.decode('ascii', errors='ignore')):
-                        last_sentence_type = nmea_parser.get_last_sentence_type()
+        buffer.write(serial_port.read(serial_port.in_waiting or 1))
+        buffer.seek(0)
+        while True:
+            line = buffer.readline()
+            if not line:
+                break
+            line = line.strip()
+            if line.startswith(b'$') and b'*' in line:
+                if nmea_parser.parse_sentence(line.decode('ascii', errors='ignore')):
+                    last_sentence_type = nmea_parser.get_last_sentence_type()
 
-                        if last_sentence_type in ['GPGGA', 'GPVTG']:
-                            print_data(nmea_parser.get_data())
-                            entries_count += 1
-                            last_data_time = time.time()
+                    if last_sentence_type in ['GPGGA', 'GPVTG']:
+                        print_data(nmea_parser.get_data())
+                        entries_count += 1
+                        last_data_time = time.time()
 
-                        if b"$GPGGA" in line and b",0," not in line:
-                            last_data_time = time.time()
+                    if b"$GPGGA" in line and b",0," not in line:
+                        last_data_time = time.time()
+        buffer = io.BytesIO(buffer.read())  # Keep remaining part
 
         if time.time() - last_data_time > 10:
             print("No raw data received for 10 seconds, reconnecting...")
