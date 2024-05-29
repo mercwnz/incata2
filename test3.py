@@ -6,10 +6,12 @@ class ublox:
         self.port = port
         self.baudrate = baudrate
         self.serial = None
+        self.ubr = None
     
     def connect(self):
         try:
-            self.serial = pyubx2.UBXReader(self.port, self.baudrate)
+            self.serial = serial.Serial(self.port, self.baudrate, timeout=3)
+            self.ubr = pyubx2.UBXReader(self.serial)
             print(f"Connected to {self.port} at {self.baudrate} baudrate.")
         except Exception as e:
             print(f"Failed to connect: {e}")
@@ -22,9 +24,9 @@ class ublox:
             print("No active connection to close.")
     
     def read_message(self):
-        if self.serial:
+        if self.ubr:
             try:
-                (raw_data, parsed_data) = self.serial.read()
+                (raw_data, parsed_data) = self.ubr.read()
                 return parsed_data
             except Exception as e:
                 print(f"Failed to read message: {e}")
