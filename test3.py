@@ -11,13 +11,29 @@ def is_port_available(port):
     except serial.SerialException:
         return False
 
+def stop_gpsd():
+    try:
+        print("Stopping gpsd service...")
+        subprocess.run(['sudo', 'systemctl', 'stop', 'gpsd'], check=True)
+        subprocess.run(['sudo', 'systemctl', 'disable', 'gpsd'], check=True)
+        print("gpsd service stopped and disabled.")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to stop/disable gpsd: {e}")
+
 def run_cgps_for_10_seconds():
     port = '/dev/ttyACM0'
     
     if not is_port_available(port):
         print(f"Error: Serial port {port} is busy or not available.")
-        return
-    
+        stop_gpsd()
+        
+        # After stopping gpsd, check again if the port is available
+        if not is_port_available(port):
+            print(f"Error: Serial port {port} is still not available after stopping gpsd.")
+            return
+        else:
+            print(f"Serial port {port} is now available after stopping gpsd.")
+
     try:
         print("Starting cgps...")
         # Start the cgps command
