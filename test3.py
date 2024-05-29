@@ -39,6 +39,18 @@ class ublox:
         # Example: sending a configuration message
         # msg = pyubx2.UBXMessage('CFG', 'CFG-PRT', SET, baudrate=self.baudrate, ...)
         # self.serial.write(msg.serialize())
+    
+    def reset_to_defaults(self):
+        if self.serial:
+            try:
+                # Create the UBX-CFG-CFG message to reset to defaults
+                msg = pyubx2.UBXMessage('CFG', 'CFG-CFG', pyubx2.SET, clearMask=0xFFFF, saveMask=0, loadMask=0xFFFF)
+                self.serial.write(msg.serialize())
+                print("Device reset to default settings.")
+            except Exception as e:
+                print(f"Failed to reset device: {e}")
+        else:
+            print("No active connection.")
 
     def read_and_print_stream(self):
         if self.ubr:
@@ -58,6 +70,7 @@ def test_ublox():
     device = ublox('/dev/ttyUSB0', 9600)  # Example port and baudrate
     device.connect()
     device.initialize_device()
+    device.reset_to_defaults()
     device.read_and_print_stream()
     device.disconnect()
 
