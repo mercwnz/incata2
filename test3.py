@@ -40,11 +40,25 @@ class ublox:
         # msg = pyubx2.UBXMessage('CFG', 'CFG-PRT', SET, baudrate=self.baudrate, ...)
         # self.serial.write(msg.serialize())
 
+    def read_and_print_stream(self):
+        if self.ubr:
+            try:
+                while True:
+                    (raw_data, parsed_data) = self.ubr.read()
+                    if parsed_data:
+                        print(parsed_data)
+            except KeyboardInterrupt:
+                print("Stream reading interrupted by user.")
+            except Exception as e:
+                print(f"Failed to read stream: {e}")
+        else:
+            print("No active connection.")
+
 def test_ublox():
     device = ublox('/dev/ttyUSB0', 9600)  # Example port and baudrate
     device.connect()
     device.initialize_device()
-    print(device.read_message())
+    device.read_and_print_stream()
     device.disconnect()
 
 if __name__ == "__main__":
