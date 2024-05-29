@@ -27,15 +27,4 @@
       package = pkgs.poetry;
     };
   };
-
-  # Adding the required buildInputs
-  buildInputs = with pkgs; [
-    gpsd
-    glibc
-  ];
-
-  # Optional: A shell hook to inform the user that the environment is set up.
-  shellHook = ''
-    echo "Development environment with cgps setup."
-  '';
 }
