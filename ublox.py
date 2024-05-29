@@ -62,22 +62,28 @@ class UBlox7:
 
     def receive_ubx_message(self):
         if self.serial and self.serial.is_open:
-            while True:
-                try:
+            try:
+                while True:
                     sync = self.serial.read(2)
                     if sync == self.sync_chars:
                         header = self.serial.read(4)
+                        if len(header) < 4:
+                            continue
                         msg_class, msg_id, msg_length = struct.unpack('<BBH', header)
                         payload = self.serial.read(msg_length)
+                        if len(payload) < msg_length:
+                            continue
                         checksum = self.serial.read(2)
+                        if len(checksum) < 2:
+                            continue
                         if self.calc_checksum(msg_class, msg_id, payload) == struct.unpack('<BB', checksum):
                             return msg_class, msg_id, payload
-                except serial.SerialException as e:
-                    print(f"Error reading from serial port: {e}")
-                    self.reconnect()
+            except serial.SerialException as e:
+                print(f"Error reading from serial port: {e}")
+                self.reconnect()
         else:
             print("Serial port is not open. Unable to receive message.")
-            return None, None, None
+        return None, None, None
 
     def set_nav_mode(self, mode):
         payload = struct.pack('<B', mode)
@@ -86,7 +92,7 @@ class UBlox7:
     def get_nav_mode(self):
         self.send_ubx_message(0x06, 0x24, b'')
         msg_class, msg_id, payload = self.receive_ubx_message()
-        if msg_class == 0x06 and msg_id == 0x24:
+        if msg_class == 0x06 and msg_id == 0x24 and payload:
             return struct.unpack('<B', payload)[0]
         return None
 
@@ -101,7 +107,7 @@ class UBlox7:
     def get_status(self):
         self.send_ubx_message(0x01, 0x03, b'')
         msg_class, msg_id, payload = self.receive_ubx_message()
-        if msg_class == 0x01 and msg_id == 0x03:
+        if msg_class == 0x01 and msg_id == 0x03 and payload:
             status = struct.unpack('<BBBBIBBBB', payload)
             return status
         return None
@@ -117,7 +123,7 @@ class UBlox7:
     def get_power_mode(self):
         self.send_ubx_message(0x06, 0x3B, b'')
         msg_class, msg_id, payload = self.receive_ubx_message()
-        if msg_class == 0x06 and msg_id == 0x3B:
+        if msg_class == 0x06 and msg_id == 0x3B and payload:
             return struct.unpack('<B', payload)[0]
         return None
 
@@ -136,7 +142,7 @@ class UBlox7:
     def get_antenna_status(self):
         self.send_ubx_message(0x06, 0x13, b'')
         msg_class, msg_id, payload = self.receive_ubx_message()
-        if msg_class == 0x06 and msg_id == 0x13:
+        if msg_class == 0x06 and msg_id == 0x13 and payload:
             return payload
         return None
 
@@ -147,7 +153,7 @@ class UBlox7:
     def get_gnss_configuration(self):
         self.send_ubx_message(0x06, 0x3E, b'')
         msg_class, msg_id, payload = self.receive_ubx_message()
-        if msg_class == 0x06 and msg_id == 0x3E:
+        if msg_class == 0x06 and msg_id == 0x3E and payload:
             return payload
         return None
 
