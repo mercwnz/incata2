@@ -44,7 +44,7 @@ class ublox:
         if self.serial:
             try:
                 # Create the UBX-CFG-CFG message to reset to defaults
-                msg = pyubx2.UBXMessage('CFG', 'CFG-CFG', pyubx2.SET, clearMask=0xFFFF, saveMask=0, loadMask=0xFFFF)
+                msg = pyubx2.UBXMessage('CFG', 'CFG-CFG', pyubx2.SET, clearMask=0x1F1F, saveMask=0, loadMask=0x1F1F)
                 self.serial.write(msg.serialize())
                 print("Device reset to default settings.")
             except Exception as e:
