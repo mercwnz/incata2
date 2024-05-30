@@ -1,29 +1,30 @@
 import subprocess
-import json
+import threading
+import time
 
 def read_gps_data():
     # Start the gpspipe process
     process = subprocess.Popen(['gpspipe', '-r'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-    try:
-        while True:
-            # Read a line of output from gpspipe
-            line = process.stdout.readline() # type: ignore
-            if line:
-                try:
-                    # Attempt to parse the line as JSON
-                    data = json.loads(line)
-                    # Process the GPS data (for now, just print it)
-                    print(json.dumps(data, indent=4))
-                except json.JSONDecodeError:
-                    print(f"Non-JSON data: {line.strip()}")
+    def read_output(stream):
+        while not process.poll():
+            line = stream.readline()
+            if line.startswith('$'):
+                print(f"{line.strip()}")
             else:
-                break
+                time.sleep(0.1)
+
+    stdout_thread = threading.Thread(target=read_output, args=(process.stdout,))
+    stderr_thread = threading.Thread(target=read_output, args=(process.stderr,))
+
+    stdout_thread.start()
+    stderr_thread.start()
+
+    try:
+        stdout_thread.join()
+        stderr_thread.join()
     except KeyboardInterrupt:
-        # Handle the user interrupting the script
         print("Stopping GPS data read...")
-    finally:
-        # Clean up the process
         process.terminate()
         process.wait()
 
