@@ -15,12 +15,16 @@ class NMEA:
                         json_data = json.loads(line.strip())
                         pretty_json = json.dumps(json_data, indent=4)
                         if json_data["class"] == "TPV":
-                            print(f"{json_data['lat']}")
-                            print(f"{json_data['lon']}")
-                            print(f"{json_data['speed']}")
-                            print(f"{json_data['magtrack']}")
+                            lat = json_data.get('lat', 'N/A')
+                            lon = json_data.get('lon', 'N/A')
+                            speed = json_data.get('speed', 'N/A')
+                            magtrack = json_data.get('magtrack', 'N/A')
+                            print(f"Latitude: {lat}")
+                            print(f"Longitude: {lon}")
+                            print(f"Speed: {speed}")
+                            print(f"Magtrack: {magtrack}")
                         else:
-                            print(f"{json_data["class"]}")
+                            print(f"{json_data['class']}")
                     except json.JSONDecodeError:
                         print(f"Failed to decode JSON: {line.strip()}")
                 else:
