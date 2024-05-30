@@ -7,8 +7,9 @@ class NMEA:
     def get_cardinal_direction(self, degrees):
         if degrees is None:
             return "N/A"
-        dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-        ix = round(degrees / 45) % 8
+        dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+                "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+        ix = round(degrees / 22.5) % 16
         return dirs[ix]
 
     def read_gps_json(self):
@@ -29,7 +30,8 @@ class NMEA:
                             print(f"Latitude:   {lat}")
                             print(f"Longitude:  {lon}")
                             print(f"Speed:      {speed}")
-                            print(f"Magtrack:   {self.get_cardinal_direction(magtrack)} : {magtrack}°")
+                            print(f"Magtrack:   {magtrack}°")
+                            print(f"Direction:  {self.get_cardinal_direction(magtrack)}")
 
                         else:
                             print(f"{json_data['class']}")
