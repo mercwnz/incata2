@@ -15,7 +15,7 @@ def read_gps_data():
         while True:
             # Read a line of output from gpspipe
             line = process.stdout.readline() # type: ignore
-            if line.startswith('$'):
+            if line:
                 print(f"{checksum(line.strip())} : {line.strip()}")
             else:
                 break
