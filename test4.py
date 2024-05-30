@@ -5,7 +5,6 @@ from collections import deque
 class NMEA:
     def __init__(self):
         self.temp_data = {}
-        self.last_sentence_type = ""
         self.latitude_queue = deque(maxlen=5)
         self.longitude_queue = deque(maxlen=5)
         self.speed_queue = deque(maxlen=5)
@@ -22,6 +21,33 @@ class NMEA:
         for char in nmea:
             checksum ^= ord(char)
         return checksum
+    
+    def parse_gps_data(self, fields):
+        nmea_type = fields[0][1:]
+
+        timestamp = int(time.time())
+
+        if nmea_type == "GPGGA":
+            if len(fields) >= 15 and fields[2] and fields[4]:
+                latitude = float(fields[2][:2]) + float(fields[2][2:]) / 60.0
+                if fields[3] == 'S':
+                    latitude = -latitude
+                longitude = float(fields[4][:3]) + float(fields[4][3:]) / 60.0
+                if fields[5] == 'W':
+                    longitude = -longitude
+
+                altitude = float(fields[9]) if fields[9] else 0.0
+                            
+                self.latitude_queue.append(latitude)
+                self.longitude_queue.append(longitude)
+                self.altitude_queue.append(altitude)
+
+                self.temp_data['timestamp'] = timestamp
+                self.temp_data['latitude'] = self.moving_average(self.latitude_queue)
+                self.temp_data['longitude'] = self.moving_average(self.longitude_queue)
+                self.temp_data['altitude'] = round(self.moving_average(self.altitude_queue), 2)
+                self.temp_data['status'] = fields[6]
+                self.temp_data['available_satellites'] = int(fields[7])
 
     def read_gps_data(self):
         process = subprocess.Popen(['gpspipe', '-r'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -35,10 +61,9 @@ class NMEA:
                         data, checksum_str = line.split('*')
                         if int(checksum_str, 16) == self.checksum(data):
                             fields = data.split(',')
-                            nmea_type = fields[0][1:]
-                            if nmea_type in ["GPGGA", "GPVTG", "GPGSA"]:
-                                print(f"{checksum_str} ; {nmea_type}")
-                                print(f"{data}")
+                            if fields[0][1:] in ["GPGGA", "GPVTG", "GPGSA"]:
+                               self.parse_gps_data(fields)
+                               print(f"{self.temp_data}")
                         else:
                             print("Checksum error")
                 else:
