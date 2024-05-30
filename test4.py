@@ -101,6 +101,7 @@ class NMEA:
                             if fields[0][1:] in ["GPGGA", "GPVTG", "GPGSA"]:
                                self.parse_gps_data(fields)
                                print(f"{self.temp_data}")
+                               print(f"{line}")
                         else:
                             print("Checksum error")
                 else:
