@@ -1,9 +1,9 @@
 import subprocess
 
-def checksum(nmea_sentence):
-    nmea_sentence = nmea_sentence.strip('$').split('*')[0]
+def checksum(nmea):
+    nmea = nmea.strip('$').split('*')[0]
     checksum = 0
-    for char in nmea_sentence:
+    for char in nmea:
         checksum ^= ord(char)
     return checksum
 
@@ -16,7 +16,12 @@ def read_gps_data():
             # Read a line of output from gpspipe
             line = process.stdout.readline() # type: ignore
             if line:
-                print(f"{checksum(line.strip())} : {line.strip()}")
+                line = line.strip()
+                if '*' in line:
+                    data, checksum_str = line.split('*')
+                    checksum_val = int(checksum_str, 16)
+                    calculated_checksum = checksum(data)
+                    print(f"{checksum_val} {calculated_checksum} : {data}")
             else:
                 break
     except KeyboardInterrupt:
