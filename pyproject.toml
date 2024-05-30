@@ -11,6 +11,7 @@ pyserial = "^3.5"
 obd = "^0.7.2"
 smbus2 = "^0.4.3"
 pyubx2 = "^1.2.42"
+nmea-parser = "^0.5.0"
 
 [build-system]
 requires = ["poetry-core"]
