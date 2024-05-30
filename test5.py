@@ -27,6 +27,7 @@ class NMEA:
                             speed = json_data.get('speed', 'N/A')
                             magtrack = json_data.get('magtrack', 'N/A')
 
+                            print(f"Google Maps URL: https://www.google.com/maps?q={lat},{lon}")
                             print(f"Latitude:   {lat}")
                             print(f"Longitude:  {lon}")
                             print(f"Speed:      {round(speed * 3.6)} km/h")
