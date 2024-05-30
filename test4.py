@@ -59,7 +59,7 @@ class NMEA:
                 self.temp_data['latitude'] = self.moving_average(self.latitude_queue)
                 self.temp_data['longitude'] = self.moving_average(self.longitude_queue)
                 self.temp_data['altitude'] = round(self.moving_average(self.altitude_queue), 2)
-                self.temp_data['status'] = self.gps_fix_types[fields[6]]
+                self.temp_data['status'] = self.gps_fix_types[int(fields[6])]
                 self.temp_data['available_satellites'] = int(fields[7])
 
         if nmea_type == "GPVTG":
