@@ -1,6 +1,5 @@
 import subprocess
 import json
-from collections import deque
 
 class NMEA:
 
@@ -11,7 +10,12 @@ class NMEA:
             while True:
                 line = process.stdout.readline()  # type: ignore
                 if line:
-                    print(line.strip())
+                    try:
+                        json_data = json.loads(line.strip())
+                        pretty_json = json.dumps(json_data, indent=4)
+                        print(pretty_json)
+                    except json.JSONDecodeError:
+                        print(f"Failed to decode JSON: {line.strip()}")
                 else:
                     break
         except KeyboardInterrupt:
