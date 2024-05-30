@@ -34,57 +34,71 @@ class NMEA:
         for char in nmea:
             checksum ^= ord(char)
         return checksum
-    
+
+    def parse_gpgga(self, fields, timestamp):
+        if len(fields) >= 15 and fields[2] and fields[4]:
+            latitude = float(fields[2][:2]) + float(fields[2][2:]) / 60.0
+            if fields[3] == 'S':
+                latitude = -latitude
+            longitude = float(fields[4][:3]) + float(fields[4][3:]) / 60.0
+            if fields[5] == 'W':
+                longitude = -longitude
+
+            altitude = float(fields[9]) if fields[9] else 0.0
+
+            self.latitude_queue.append(latitude)
+            self.longitude_queue.append(longitude)
+            self.altitude_queue.append(altitude)
+
+            self.temp_data['timestamp'] = timestamp
+            self.temp_data['latitude'] = self.moving_average(self.latitude_queue)
+            self.temp_data['longitude'] = self.moving_average(self.longitude_queue)
+            self.temp_data['altitude'] = round(self.moving_average(self.altitude_queue), 2)
+            self.temp_data['status'] = self.gps_fix_types[int(fields[6])]
+            self.temp_data['available_satellites'] = int(fields[7])
+
+    def parse_gpvtg(self, fields):
+        try:
+            speed = float(fields[7]) if fields[7] else 0.0
+        except ValueError:
+            speed = 0.0
+
+        try:
+            direction = float(fields[1]) if fields[1] else 0.0
+        except ValueError:
+            direction = 0.0
+
+        try:
+            climb = float(fields[8]) if len(fields) > 8 and fields[8] else 0.0
+        except ValueError:
+            climb = 0.0
+
+        self.speed_queue.append(speed)
+        self.direction_queue.append(direction)
+        self.climb_queue.append(climb)
+
+        self.temp_data['speed'] = self.moving_average(self.speed_queue)
+        self.temp_data['direction'] = self.moving_average(self.direction_queue)
+        self.temp_data['climb'] = round(self.moving_average(self.climb_queue), 2)
+
+    def parse_gpgbs(self, fields):
+        if len(fields) >= 5:
+            timestamp = fields[1]
+            err_lat = fields[2]
+            err_lon = fields[3]
+            err_alt = fields[4]
+            print(f"GPGBS: Timestamp={timestamp}, ErrLat={err_lat}, ErrLon={err_lon}, ErrAlt={err_alt}")
+
     def parse_gps_data(self, fields):
         nmea_type = fields[0][1:]
-
         timestamp = int(time.time())
 
         if nmea_type == "GPGGA":
-            if len(fields) >= 15 and fields[2] and fields[4]:
-                latitude = float(fields[2][:2]) + float(fields[2][2:]) / 60.0
-                if fields[3] == 'S':
-                    latitude = -latitude
-                longitude = float(fields[4][:3]) + float(fields[4][3:]) / 60.0
-                if fields[5] == 'W':
-                    longitude = -longitude
-
-                altitude = float(fields[9]) if fields[9] else 0.0
-                            
-                self.latitude_queue.append(latitude)
-                self.longitude_queue.append(longitude)
-                self.altitude_queue.append(altitude)
-
-                self.temp_data['timestamp'] = timestamp
-                self.temp_data['latitude'] = self.moving_average(self.latitude_queue)
-                self.temp_data['longitude'] = self.moving_average(self.longitude_queue)
-                self.temp_data['altitude'] = round(self.moving_average(self.altitude_queue), 2)
-                self.temp_data['status'] = self.gps_fix_types[int(fields[6])]
-                self.temp_data['available_satellites'] = int(fields[7])
-
-        if nmea_type == "GPVTG":
-            try:
-                speed = float(fields[7]) if fields[7] else 0.0
-            except ValueError:
-                speed = 0.0
-
-            try:
-                direction = float(fields[1]) if fields[1] else 0.0
-            except ValueError:
-                direction = 0.0
-            
-            try:
-                climb = float(fields[8]) if len(fields) > 8 and fields[8] else 0.0
-            except ValueError:
-                climb = 0.0
-
-            self.speed_queue.append(speed)
-            self.direction_queue.append(direction)
-            self.climb_queue.append(climb)
-
-            self.temp_data['speed'] = self.moving_average(self.speed_queue)
-            self.temp_data['direction'] = self.moving_average(self.direction_queue)
-            self.temp_data['climb'] = round(self.moving_average(self.climb_queue), 2)
+            self.parse_gpgga(fields, timestamp)
+        elif nmea_type == "GPVTG":
+            self.parse_gpvtg(fields)
+        elif nmea_type == "GPGBS":
+            self.parse_gpgbs(fields)
 
     def read_gps_data(self):
         process = subprocess.Popen(['gpspipe', '-r'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -99,9 +113,8 @@ class NMEA:
                         data, checksum_str = line.split('*')
                         if int(checksum_str, 16) == self.checksum(data):
                             fields = data.split(',')
-                            if fields[0][1:] in ["GPGGA", "GPVTG", "GPGSA"]:
-                               self.parse_gps_data(fields)
-                            #    print(f"{self.temp_data}")
+                            if fields[0][1:] in ["GPGGA", "GPVTG", "GPGSA", "GPGBS"]:
+                                self.parse_gps_data(fields)
                         else:
                             print("Checksum error")
                 else:
