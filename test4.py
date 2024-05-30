@@ -95,13 +95,13 @@ class NMEA:
                 if line:
                     line = line.strip()
                     if '*' in line:
+                        print(f"{line}")
                         data, checksum_str = line.split('*')
                         if int(checksum_str, 16) == self.checksum(data):
                             fields = data.split(',')
                             if fields[0][1:] in ["GPGGA", "GPVTG", "GPGSA"]:
                                self.parse_gps_data(fields)
                                print(f"{self.temp_data}")
-                               print(f"{line}")
                         else:
                             print("Checksum error")
                 else:
