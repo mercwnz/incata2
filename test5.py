@@ -1,5 +1,6 @@
 import subprocess
 import json
+import sqlite3
 
 class NMEA:
 
@@ -13,7 +14,10 @@ class NMEA:
                     try:
                         json_data = json.loads(line.strip())
                         pretty_json = json.dumps(json_data, indent=4)
-                        print(pretty_json)
+                        print(f"{json_data['lat']}")
+                        print(f"{json_data['lon']}")
+                        print(f"{json_data['speed']}")
+                        print(f"{json_data['magtrack']}")
                     except json.JSONDecodeError:
                         print(f"Failed to decode JSON: {line.strip()}")
                 else:
