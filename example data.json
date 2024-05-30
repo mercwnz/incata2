@@ -1,0 +1,274 @@
+[
+    {
+        "class": "VERSION",
+        "release": "3.22",
+        "rev": "3.22",
+        "proto_major": 3,
+        "proto_minor": 14
+    },
+    {
+        "class": "DEVICES",
+        "devices": [
+            {
+                "class": "DEVICE",
+                "path": "/dev/ttyACM0",
+                "driver": "u-blox",
+                "subtype": "SW 1.00 (59842),HW 00070000",
+                "subtype1": "PROTVER 14.00,GPS;SBAS;GLO;QZSS",
+                "activated": "2024-05-30T23:15:09.711Z",
+                "flags": 1,
+                "native": 1,
+                "bps": 9600,
+                "parity": "N",
+                "stopbits": 1,
+                "cycle": 1.0,
+                "mincycle": 0.02
+            }
+        ]
+    },
+    {
+        "class": "WATCH",
+        "enable": true,
+        "json": true,
+        "nmea": false,
+        "raw": 0,
+        "scaled": false,
+        "timing": false,
+        "split24": false,
+        "pps": false
+    },
+    {
+        "class": "TPV",
+        "device": "/dev/ttyACM0",
+        "mode": 3,
+        "time": "2024-05-30T23:15:10.000Z",
+        "leapseconds": 18,
+        "ept": 0.005,
+        "lat": 52.651743092,
+        "lon": 4.780309988,
+        "altHAE": 55.7118,
+        "altMSL": 11.8801,
+        "alt": 11.8801,
+        "track": 191.5083,
+        "magtrack": 192.911,
+        "magvar": 1.4,
+        "speed": 0.683,
+        "climb": -0.168,
+        "eps": 1.51,
+        "ecefx": 3864105.64,
+        "ecefy": 323140.77,
+        "ecefz": 5047170.49,
+        "ecefvx": 0.44,
+        "ecefvy": -0.1,
+        "ecefvz": -0.54,
+        "ecefpAcc": 38.4,
+        "ecefvAcc": 1.51,
+        "velN": -0.67,
+        "velE": -0.136,
+        "velD": 0.168,
+        "geoidSep": 43.832
+    },
+    {
+        "class": "SKY",
+        "device": "/dev/ttyACM0",
+        "time": "2024-05-30T23:15:10.000Z",
+        "xdop": 0.83,
+        "ydop": 1.27,
+        "vdop": 2.08,
+        "tdop": 1.56,
+        "hdop": 1.52,
+        "gdop": 3.01,
+        "pdop": 2.58,
+        "nSat": 19,
+        "uSat": 6,
+        "satellites": [
+            {
+                "PRN": 5,
+                "el": 42.0,
+                "az": 208.0,
+                "ss": 18.0,
+                "used": true,
+                "gnssid": 0,
+                "svid": 5,
+                "health": 1
+            },
+            {
+                "PRN": 7,
+                "el": 12.0,
+                "az": 69.0,
+                "ss": 0.0,
+                "used": false,
+                "gnssid": 0,
+                "svid": 7,
+                "health": 1
+            },
+            {
+                "PRN": 8,
+                "el": 8.0,
+                "az": 24.0,
+                "ss": 0.0,
+                "used": false,
+                "gnssid": 0,
+                "svid": 8,
+                "health": 1
+            },
+            {
+                "PRN": 13,
+                "el": 88.0,
+                "az": 308.0,
+                "ss": 21.0,
+                "used": true,
+                "gnssid": 0,
+                "svid": 13,
+                "health": 1
+            },
+            {
+                "PRN": 14,
+                "el": 55.0,
+                "az": 104.0,
+                "ss": 17.0,
+                "used": true,
+                "gnssid": 0,
+                "svid": 14,
+                "health": 1
+            },
+            {
+                "PRN": 15,
+                "el": 54.0,
+                "az": 291.0,
+                "ss": 26.0,
+                "used": true,
+                "gnssid": 0,
+                "svid": 15,
+                "health": 1
+            },
+            {
+                "PRN": 17,
+                "el": 0.0,
+                "az": 122.0,
+                "ss": 0.0,
+                "used": false,
+                "gnssid": 0,
+                "svid": 17,
+                "health": 1
+            },
+            {
+                "PRN": 18,
+                "el": 13.0,
+                "az": 291.0,
+                "ss": 17.0,
+                "used": true,
+                "gnssid": 0,
+                "svid": 18,
+                "health": 1
+            },
+            {
+                "PRN": 20,
+                "el": 18.0,
+                "az": 190.0,
+                "ss": 0.0,
+                "used": false,
+                "gnssid": 0,
+                "svid": 20,
+                "health": 1
+            },
+            {
+                "PRN": 22,
+                "el": 49.0,
+                "az": 140.0,
+                "ss": 0.0,
+                "used": false,
+                "gnssid": 0,
+                "svid": 22,
+                "health": 1
+            },
+            {
+                "PRN": 23,
+                "el": 13.0,
+                "az": 325.0,
+                "ss": 21.0,
+                "used": false,
+                "gnssid": 0,
+                "svid": 23,
+                "health": 1
+            },
+            {
+                "PRN": 24,
+                "el": 14.0,
+                "az": 252.0,
+                "ss": 0.0,
+                "used": false,
+                "gnssid": 0,
+                "svid": 24,
+                "health": 1
+            },
+            {
+                "PRN": 30,
+                "el": 43.0,
+                "az": 71.0,
+                "ss": 26.0,
+                "used": true,
+                "gnssid": 0,
+                "svid": 30,
+                "health": 1
+            },
+            {
+                "PRN": 33,
+                "el": 27.0,
+                "az": 205.0,
+                "ss": 0.0,
+                "used": false,
+                "gnssid": 1,
+                "svid": 120,
+                "health": 1
+            },
+            {
+                "PRN": 37,
+                "el": 28.0,
+                "az": 159.0,
+                "ss": 0.0,
+                "used": false,
+                "gnssid": 1,
+                "svid": 124,
+                "health": 1
+            },
+            {
+                "PRN": 39,
+                "el": 27.0,
+                "az": 155.0,
+                "ss": 0.0,
+                "used": false,
+                "gnssid": 1,
+                "svid": 126,
+                "health": 1
+            },
+            {
+                "PRN": 193,
+                "az": 0.0,
+                "ss": 0.0,
+                "used": false,
+                "gnssid": 5,
+                "svid": 1,
+                "health": 1
+            },
+            {
+                "PRN": 195,
+                "az": 0.0,
+                "ss": 0.0,
+                "used": false,
+                "gnssid": 5,
+                "svid": 3,
+                "health": 1
+            },
+            {
+                "PRN": 196,
+                "az": 0.0,
+                "ss": 0.0,
+                "used": false,
+                "gnssid": 5,
+                "svid": 4,
+                "health": 1
+            }
+        ]
+    }
+]

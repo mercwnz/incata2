@@ -29,12 +29,21 @@ class NMEA:
 
                             print(f"Latitude:   {lat}")
                             print(f"Longitude:  {lon}")
-                            print(f"Speed:      {speed}")
+                            print(f"Speed:      {speed * 3.6} km/h")
                             print(f"Magtrack:   {magtrack}°")
                             print(f"Direction:  {self.get_cardinal_direction(magtrack)}")
+                            print(f"\n")
+
+                        if json_data["class"] == "SKY":
+                            nSat = json_data.get('nSat', 'N/A')
+                            uSat = json_data.get('uSat', 'N/A')
+
+                            print(f"Satellites:   {uSat}/{nSat}")
+                            print(f"\n")
 
                         else:
                             print(f"{json_data['class']}")
+                            print(f"{json.dumps(json_data, indent=4)}")
                     except json.JSONDecodeError:
                         print(f"Failed to decode JSON: {line.strip()}")
                 else:
