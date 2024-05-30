@@ -3,6 +3,19 @@ import time
 from collections import deque
 
 class NMEA:
+
+    gps_fix_types = [
+        "Fix not available",
+        "GPS fix",
+        "Differential GPS fix",
+        "PPS fix",
+        "Real Time Kinematic",
+        "Float RTK",
+        "Estimated (dead reckoning)",
+        "Manual input mode",
+        "Simulation mode"
+    ]
+
     def __init__(self):
         self.temp_data = {}
         self.latitude_queue = deque(maxlen=5)
@@ -46,8 +59,32 @@ class NMEA:
                 self.temp_data['latitude'] = self.moving_average(self.latitude_queue)
                 self.temp_data['longitude'] = self.moving_average(self.longitude_queue)
                 self.temp_data['altitude'] = round(self.moving_average(self.altitude_queue), 2)
-                self.temp_data['status'] = fields[6]
+                self.temp_data['status'] = self.gps_fix_types[fields[6]]
                 self.temp_data['available_satellites'] = int(fields[7])
+
+        if nmea_type == "GPVTG":
+            try:
+                speed = float(fields[7]) if fields[7] else 0.0
+            except ValueError:
+                speed = 0.0
+
+            try:
+                direction = float(fields[1]) if fields[1] else 0.0
+            except ValueError:
+                direction = 0.0
+            
+            try:
+                climb = float(fields[8]) if len(fields) > 8 and fields[8] else 0.0
+            except ValueError:
+                climb = 0.0
+
+            self.speed_queue.append(speed)
+            self.direction_queue.append(direction)
+            self.climb_queue.append(climb)
+
+            self.temp_data['speed'] = self.moving_average(self.speed_queue)
+            self.temp_data['direction'] = self.moving_average(self.direction_queue)
+            self.temp_data['climb'] = round(self.moving_average(self.climb_queue), 2)
 
     def read_gps_data(self):
         process = subprocess.Popen(['gpspipe', '-r'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
