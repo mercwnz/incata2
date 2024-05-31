@@ -51,7 +51,7 @@ class NMEA:
                             print(f"Latitude:   {lat}")
                             print(f"Longitude:  {lon}")
                             print(f"Speed:      {round(speed * 3.6)} km/h")
-                            print(f"Magtrack:   {round(magtrack)}°")
+                            print(f"Magtrack:   {magtrack}°")
                             # print(f"Direction:  {direction}")
                             print(f"\n")
 

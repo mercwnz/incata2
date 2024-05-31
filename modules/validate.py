@@ -52,6 +52,7 @@ class VALIDATE:
 
                                 if path == self.devices_list['GPS'] and driver == 'NMEA0183':
                                     self.validated |= self.checks['GPS_OUTPUT']
+                                    break
                         else:
                             break
 
