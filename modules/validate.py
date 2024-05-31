@@ -50,9 +50,10 @@ class VALIDATE:
                     print("looking")
                     lines_read += 1
                     line = process.stdout.readline()  # type: ignore
-                    print(f"{line}")
                     if line:
                         json_data = json.loads(line.strip())
+                        devices = json_data['devices']
+                        print(devices)
                         if 'class' in json_data:
                             if json_data['class'] == 'DEVICE':
                                 self.validated |= self.checks['GPS_CONNECTED']
