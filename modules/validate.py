@@ -1,10 +1,12 @@
+import json
 import serial
 import serial.tools.list_ports
+import subprocess
 import obd
+
 from obd import OBDStatus
 class VALIDATE:
     def __init__(self):
-        self.validated = 0b0000000
         self.checks = {
             'GPS_DEVICE': 1 << 0,
             'GPS_OUTPUT': 1 << 1,
@@ -14,6 +16,11 @@ class VALIDATE:
             'FT232_CONNECTED' : 1 << 4,
         }
         self.devices_list = {}
+        self.validated = 0b0000000
+
+        self.devices()
+        self.gps_output()
+        self.ft232_output()
 
     def devices(self):
         ports = serial.tools.list_ports.comports()
@@ -27,7 +34,29 @@ class VALIDATE:
         
         return self.devices_list
     
-    def outputs(self):
+    def gps_output(self):
+        process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        try:
+            while True:
+                line = process.stdout.readline()  # type: ignore
+                if line:
+                    json_data = json.loads(line.strip())
+                    
+                    if json_data["class"] == "DEVICES":
+                        devices = json_data.get('devices', 'N/A')
+                        print(devices)
+                        self.validated |= self.checks['GPS_OUTPUT']
+                        break
+
+        except KeyboardInterrupt:
+            print("Stopping GPS data read...")
+        finally:
+            process.terminate()
+            process.wait()
+
+
+    def ft232_output(self):
         port = self.devices_list['FT232']
         try:
             obd.logger.removeHandler(obd.console_handler)
