@@ -1,18 +1,17 @@
 import subprocess
 import json
-import sqlite3
 
 class NMEA:
-
+   
     def get_cardinal_direction(self, degrees):
-        if degrees is None:
-            return "N/A"
         dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
                 "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
-        ix = round(degrees / 22.5) % 16
-        return dirs[ix]
+        if degrees is None:
+            return "N/A"
+        return dirs[(round(degrees / 22.5) % 16)]
 
     def read_gps_json(self):
+
         process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         try:
@@ -21,6 +20,7 @@ class NMEA:
                 if line:
                     try:
                         json_data = json.loads(line.strip())
+                       
                         if json_data["class"] == "TPV":
                             lat = json_data.get('lat', 'N/A')
                             lon = json_data.get('lon', 'N/A')
@@ -34,6 +34,8 @@ class NMEA:
                             print(f"Magtrack:   {round(magtrack)}°")
                             print(f"Direction:  {self.get_cardinal_direction(magtrack)}")
                             print(f"\n")
+
+                            return 
 
                         elif json_data["class"] == "SKY":
                             nSat = json_data.get('nSat', 'N/A')
@@ -55,7 +57,3 @@ class NMEA:
         finally:
             process.terminate()
             process.wait()
-
-if __name__ == "__main__":
-    tester = NMEA()
-    tester.read_gps_json()
