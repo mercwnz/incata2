@@ -52,7 +52,7 @@ class VALIDATE:
                     line = process.stdout.readline()  # type: ignore
                     if line:
                         json_data = json.loads(line.strip())
-                        if json_data['class'] is 'DEVICE':
+                        if json_data['class'] == 'DEVICE':
                             devices = json_data.get('devices', [])
                             if devices:
                                 print(devices)
