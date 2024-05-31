@@ -19,10 +19,10 @@ class VALIDATE:
         for port in ports:
             if "GPS" in port.description:
                 self.validated |= self.checks['DEVICE_GPS']
-                self.devices_list['GPS'] = port
+                self.devices_list['GPS'] = port.device
             if "FT232" in port.description:
                 self.validated |= self.checks['DEVICE_FT232']
-                self.devices_list['FT232'] = port
+                self.devices_list['FT232'] = port.device
         
         return self.devices_list
     
