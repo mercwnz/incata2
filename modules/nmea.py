@@ -83,11 +83,10 @@ class NMEA:
             self.close_db()
 
     def insert_into_db(self, data):
-        for entry in data:
-            self.cursor.execute('''
-                INSERT INTO track (lat, lon, speed, magtrack, direction)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (entry['lat'], entry['lon'], entry['speed'], entry['magtrack'], entry['direction']))
+        self.cursor.execute('''
+            INSERT INTO track (lat, lon, speed, magtrack, direction)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (data['lat'], data['lon'], data['speed'], data['magtrack'], data['direction']))
         self.conn.commit()
 
     def close_db(self):
