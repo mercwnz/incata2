@@ -27,10 +27,14 @@ class NMEA:
                 "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
         if degrees is None:
             return "N/A"
+        try:
+            degrees = float(degrees)
+        except ValueError:
+            return "N/A"
         ix = round(degrees / 22.5) % 16
         return dirs[ix]
 
-    def start_gps(self,insert=False):
+    def start_gps(self, insert=False):
         process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         try:
@@ -53,7 +57,7 @@ class NMEA:
 
                             print(data)
                             
-                            if json_data.get('lat', 'N/A') != 'N/A' and json_data.get('lon', 'N/A') != 'N/A':
+                            if json_data.get('lat', 'N/A') != 'N/A' and json_data.get('lon', 'N/A') != 'N/A' and insert:
                                 self.insert_into_db(data)
 
                         elif json_data["class"] == "SKY":
@@ -79,14 +83,13 @@ class NMEA:
             self.close_db()
 
     def insert_into_db(self, data):
-        # Insert data into the table
-        self.cursor.execute('''
-            INSERT INTO track (lat, lon, speed, magtrack, direction)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (data['lat'], data['lon'], data['speed'], data['magtrack'], data['direction']))
+        for entry in data:
+            self.cursor.execute('''
+                INSERT INTO track (lat, lon, speed, magtrack, direction)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (entry['lat'], entry['lon'], entry['speed'], entry['magtrack'], entry['direction']))
         self.conn.commit()
 
     def close_db(self):
         # Close the connection
         self.conn.close()
-
