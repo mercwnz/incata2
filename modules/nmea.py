@@ -3,7 +3,25 @@ import json
 import sqlite3
 
 class NMEA:
-   
+
+    def __init__(self):
+        self.conn = sqlite3.connect('example.db')
+        self.cursor = self.conn.cursor()
+        self.create_table()
+
+    def create_table(self):
+        # Create a table (if it doesn't already exist)
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS track (
+                lat REAL,
+                lon REAL,
+                speed INTEGER,
+                magtrack REAL,
+                direction TEXT
+            )
+        ''')
+        self.conn.commit()
+
     def get_cardinal_direction(self, degrees):
         dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
                 "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
@@ -13,7 +31,6 @@ class NMEA:
         return dirs[ix]
 
     def read_gps_json(self):
-
         process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         try:
@@ -22,20 +39,30 @@ class NMEA:
                 if line:
                     try:
                         json_data = json.loads(line.strip())
-                       
+
                         if json_data["class"] == "TPV":
                             lat = json_data.get('lat', 'N/A')
                             lon = json_data.get('lon', 'N/A')
                             speed = json_data.get('speed', 'N/A')
                             magtrack = json_data.get('magtrack', 'N/A')
+                            direction = self.get_cardinal_direction(magtrack)
 
                             print(f"Maps:       https://www.google.com/maps?q={lat},{lon}")
                             print(f"Latitude:   {lat}")
                             print(f"Longitude:  {lon}")
                             print(f"Speed:      {round(speed * 3.6)} km/h")
                             print(f"Magtrack:   {round(magtrack)}°")
-                            print(f"Direction:  {self.get_cardinal_direction(magtrack)}")
+                            print(f"Direction:  {direction}")
                             print(f"\n")
+
+                            if lat != 'N/A' and lon != 'N/A':
+                                self.write_to_db({
+                                    'lat': lat,
+                                    'lon': lon,
+                                    'speed': round(speed * 3.6) if speed != 'N/A' else 0,
+                                    'magtrack': round(magtrack) if magtrack != 'N/A' else 0,
+                                    'direction': direction
+                                })
 
                         elif json_data["class"] == "SKY":
                             nSat = json_data.get('nSat', 'N/A')
@@ -57,31 +84,17 @@ class NMEA:
         finally:
             process.terminate()
             process.wait()
+            self.close_db()
 
     def write_to_db(self, data):
-        conn = sqlite3.connect('example.db')
-        cursor = conn.cursor()
-
-        # Create a table (if it doesn't already exist)
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS track (
-                lat REAL,
-                lon REAL,
-                speed INTEGER,
-                magtrack REAL,
-                direction TEXT
-            )
-        ''')
-        conn.commit()
-
         # Insert data into the table
-        for entry in data:
-            cursor.execute('''
-                INSERT INTO track (lat, lon, speed, magtrack, direction)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (entry['lat'], entry['lon'], entry['speed'], entry['magtrack'], entry['direction']))
+        self.cursor.execute('''
+            INSERT INTO track (lat, lon, speed, magtrack, direction)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (data['lat'], data['lon'], data['speed'], data['magtrack'], data['direction']))
+        self.conn.commit()
 
-        conn.commit()
-
+    def close_db(self):
         # Close the connection
-        conn.close()
+        self.conn.close()
+
