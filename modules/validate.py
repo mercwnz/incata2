@@ -52,13 +52,11 @@ class VALIDATE:
                     line = process.stdout.readline()  # type: ignore
                     if line:
                         json_data = json.loads(line.strip())
-                        devices = json_data['devices']
-                        print(devices)
-                        if 'class' in json_data:
-                            if json_data['class'] == 'DEVICE':
+                        if json_data['class'] is 'DEVICE':
+                            devices = json_data.get('devices', [])
+                            if devices:
+                                print(devices)
                                 self.validated |= self.checks['GPS_CONNECTED']
-                            elif json_data['class'] == 'TPV':
-                                self.validated |= self.checks['GPS_OUTPUT']
 
             except KeyboardInterrupt:
                 print("Stopping GPS read...")
