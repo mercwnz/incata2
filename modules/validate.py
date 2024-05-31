@@ -34,7 +34,7 @@ class VALIDATE:
         return self.devices_list
     
     def gps_output(self):
-        process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        process = subprocess.Popen(['gpspipe', '-w -n 100'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         try:
             lines_read = 0

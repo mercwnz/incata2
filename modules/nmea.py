@@ -50,7 +50,7 @@ class NMEA:
                             print(f"Maps:       https://www.google.com/maps?q={lat},{lon}")
                             print(f"Latitude:   {lat}")
                             print(f"Longitude:  {lon}")
-                            print(f"Speed:      {round(speed * 3.6)} km/h")
+                            print(f"Speed:      {speed}")
                             print(f"Magtrack:   {magtrack}°")
                             # print(f"Direction:  {direction}")
                             print(f"\n")
