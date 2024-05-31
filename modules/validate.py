@@ -45,14 +45,6 @@ class VALIDATE:
                     line = process.stdout.readline()  # type: ignore
                     if line:
                         json_data = json.loads(line.strip())
-                        devices = json_data.get('devices', [])
-                        if devices:
-                            for data in devices:
-                                path = data.get('path', 'N/A')
-                                if path == self.devices_list.get('GPS'):
-                                    self.validated |= self.checks['GPS_CONNECTED']
-                                    print(f"GPS Connection Status: Available")
-                                    return
                         print(json_data)
                     lines_read += 1
 
