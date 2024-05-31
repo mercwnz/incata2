@@ -68,7 +68,6 @@ class NMEA:
 
     def insert_into_db(self, data):
         try:
-            print(f"{data}")
             self.cursor.execute('''
                 INSERT INTO track (timestamp, lat, lon, speed, magtrack, alt)
                 VALUES (?, ?, ?, ?, ?, ?)
@@ -77,6 +76,8 @@ class NMEA:
         except sqlite3.IntegrityError as e:
             return
             # print(f"Failed to insert data into database: {e}")
+        finally:
+            print(f"{data}")
 
 
     def close_db(self):
