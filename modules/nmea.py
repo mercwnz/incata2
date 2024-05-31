@@ -30,7 +30,7 @@ class NMEA:
         ix = round(degrees / 22.5) % 16
         return dirs[ix]
 
-    def read_gps_json(self):
+    def start_gps(self):
         process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         try:
@@ -55,14 +55,7 @@ class NMEA:
                             print(f"Direction:  {direction}")
                             print(f"\n")
 
-                            if lat != 'N/A' and lon != 'N/A':
-                                self.write_to_db({
-                                    'lat': lat,
-                                    'lon': lon,
-                                    'speed': round(speed * 3.6) if speed != 'N/A' else 0,
-                                    'magtrack': round(magtrack) if magtrack != 'N/A' else 0,
-                                    'direction': direction
-                                })
+
 
                         elif json_data["class"] == "SKY":
                             nSat = json_data.get('nSat', 'N/A')

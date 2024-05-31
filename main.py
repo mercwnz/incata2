@@ -7,5 +7,5 @@ if __name__ == "__main__":
 
     print(f"Validate result\t{bin(validate.result())}")
 
-# nmea = NMEA()
-# nmea.read_gps_json()
+nmea = NMEA()
+nmea.start_gps()
