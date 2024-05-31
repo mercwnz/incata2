@@ -55,8 +55,8 @@ class VALIDATE:
                     devices = json_data.get('sky', [])
                     if devices:
                         for data in devices:
-                            path = data.get('lat', 'N/A')
-                            if path == self.devices_list.get('GPS'):
+                            lat = data.get('lat', 'N/A')
+                            if isinstance(lat, float):
                                 self.validated |= self.checks['GPS_OUTPUT']
                                 print(f"GPS Output: Valid")
                                 lines_read = 100
