@@ -10,7 +10,6 @@ class NMEA:
         self.create_table()
 
     def create_table(self):
-        # Create a table (if it doesn't already exist)
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS track (
                 lat REAL,
@@ -21,7 +20,7 @@ class NMEA:
         ''')
         self.conn.commit()
 
-    def start_gps(self, insert=False):
+    def start_gps(self, insert=False, debug=False):
         process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         try:
@@ -32,8 +31,6 @@ class NMEA:
                         json_data = json.loads(line.strip())
 
                         if json_data["class"] == "TPV":
-                            print(f"{json.dumps(json_data, indent=4)}")
-
                             data = {
                                 'lat': json_data.get('lat', 'N/A'),
                                 'lon': json_data.get('lon', 'N/A'),
@@ -42,16 +39,15 @@ class NMEA:
                             }
 
                             if data['lat'] != 'N/A' and data['lon'] != 'N/A' and insert:
+                                print(f"{data}")
                                 self.insert_into_db(data)
 
                         elif json_data["class"] == "SKY":
                             nSat = json_data.get('nSat', 'N/A')
                             uSat = json_data.get('uSat', 'N/A')
-
                             print(f"Satellites:   {uSat}/{nSat}")
-                            print(f"\n")
 
-                        else:
+                        elif debug:
                             print(f"{json_data['class']}")
                             print(f"{json.dumps(json_data, indent=4)}")
 
@@ -67,13 +63,11 @@ class NMEA:
             self.close_db()
 
     def insert_into_db(self, data):
-        # self.cursor.execute
-        print('''
+        self.cursor.execute('''
             INSERT INTO track (lat, lon, speed, magtrack)
             VALUES (?, ?, ?, ?)
         ''', (data['lat'], data['lon'], data['speed'], data['magtrack']))
-        # self.conn.commit()
+        self.conn.commit()
 
     def close_db(self):
-        # Close the connection
         self.conn.close()

@@ -52,6 +52,7 @@ class VALIDATE:
 
                                 if path == self.devices_list.get('GPS') and driver == 'NMEA0183':
                                     self.validated |= self.checks['GPS_OUTPUT']
+                                    print(f"GPS Connection Status: Available")
                                     return
                 lines_read += 1
 
