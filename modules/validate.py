@@ -37,15 +37,18 @@ class VALIDATE:
     
     def gps_output(self):
         if self.checks['GPS_DEVICE']:
-            process = subprocess.Popen(['gpspipe', '-w -n 20'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            process = subprocess.Popen(['gpspipe', '-w -n 10'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
             try:
                 lines_read = 0
-                while True or not (self.validated & (self.checks['GPS_CONNECTED'] and self.checks['GPS_OUTPUT'])) :
+                while lines_read < 100 and not (
+                    (self.validated & self.checks['GPS_CONNECTED']) and
+                    (self.validated & self.checks['GPS_OUTPUT'])
+                ):
                     line = process.stdout.readline()  # type: ignore
                     if line:
                         json_data = json.loads(line.strip())
-                        print(json_data)
+                        print(json_data['class'])
                     lines_read += 1
 
             except KeyboardInterrupt:
