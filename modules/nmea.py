@@ -44,7 +44,6 @@ class NMEA:
                             }
 
                             if data['lat'] and data['lon'] and insert:
-                                print(f"{data}")
                                 self.insert_into_db(data)
 
                         elif json_data["class"] == "SKY":
@@ -69,6 +68,7 @@ class NMEA:
 
     def insert_into_db(self, data):
         try:
+            print(f"{data}")
             self.cursor.execute('''
                 INSERT INTO track (timestamp, lat, lon, speed, magtrack, alt)
                 VALUES (?, ?, ?, ?, ?, ?)
