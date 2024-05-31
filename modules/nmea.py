@@ -17,7 +17,8 @@ class NMEA:
                 lat REAL,
                 lon REAL,
                 speed INTEGER,
-                magtrack REAL
+                magtrack REAL,
+                alt REAL
             )
         ''')
         self.conn.commit()
@@ -38,7 +39,8 @@ class NMEA:
                                 'lat': json_data.get('lat', None),
                                 'lon': json_data.get('lon', None),
                                 'speed': json_data.get('speed', None),
-                                'magtrack': json_data.get('magtrack', None)
+                                'magtrack': json_data.get('magtrack', None),
+                                'alt': json_data.get('alt', None)
                             }
 
                             if data['lat'] and data['lon'] and insert:
@@ -68,12 +70,13 @@ class NMEA:
     def insert_into_db(self, data):
         try:
             self.cursor.execute('''
-                INSERT INTO track (timestamp, lat, lon, speed, magtrack)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (data['timestamp'], data['lat'], data['lon'], data['speed'], data['magtrack']))
+                INSERT INTO track (timestamp, lat, lon, speed, magtrack, alt)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (data['timestamp'], data['lat'], data['lon'], data['speed'], data['magtrack'], data['alt']))
             self.conn.commit()
         except sqlite3.IntegrityError as e:
-            print(f"Failed to insert data into database: {e}")
+            return
+            # print(f"Failed to insert data into database: {e}")
 
 
     def close_db(self):
