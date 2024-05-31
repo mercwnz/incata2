@@ -41,10 +41,12 @@ class VALIDATE:
         if self.validated & self.checks['GPS_DEVICE']:
             process = subprocess.Popen(['gpspipe', '-w', '-n', '20'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             try:
+                print("GPS Device Connecting...")
                 while not (
                     (self.validated & self.checks['GPS_CONNECTED']) and
                     (self.validated & self.checks['GPS_OUTPUT'])
                 ):
+                    print("looking")
                     line = process.stdout.readline()  # type: ignore
                     if line:
                         json_data = json.loads(line.strip())
