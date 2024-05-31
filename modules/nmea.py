@@ -5,7 +5,7 @@ import sqlite3
 class NMEA:
 
     def __init__(self):
-        self.conn = sqlite3.connect('example.db')
+        self.conn = sqlite3.connect('track.db')
         self.cursor = self.conn.cursor()
         self.create_table()
 
@@ -32,6 +32,7 @@ class NMEA:
                         json_data = json.loads(line.strip())
 
                         if json_data["class"] == "TPV":
+                            print(f"{json.dumps(json_data, indent=4)}")
 
                             data = {
                                 'lat': json_data.get('lat', 'N/A'),
