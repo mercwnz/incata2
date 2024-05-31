@@ -1,6 +1,7 @@
 import subprocess
 import json
 import sqlite3
+from datetime import datetime
 
 class NMEA:
 
@@ -12,6 +13,7 @@ class NMEA:
     def create_table(self):
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS track (
+                timestamp TEXT,
                 lat REAL,
                 lon REAL,
                 speed INTEGER,
@@ -32,6 +34,7 @@ class NMEA:
 
                         if json_data["class"] == "TPV":
                             data = {
+                                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                                 'lat': json_data.get('lat', 'N/A'),
                                 'lon': json_data.get('lon', 'N/A'),
                                 'speed': json_data.get('speed', 'N/A'),
@@ -64,9 +67,9 @@ class NMEA:
 
     def insert_into_db(self, data):
         self.cursor.execute('''
-            INSERT INTO track (lat, lon, speed, magtrack)
+            INSERT INTO track (timestamp, lat, lon, speed, magtrack)
             VALUES (?, ?, ?, ?)
-        ''', (data['lat'], data['lon'], data['speed'], data['magtrack']))
+        ''', (data['timestamp'], data['lat'], data['lon'], data['speed'], data['magtrack']))
         self.conn.commit()
 
     def close_db(self):
