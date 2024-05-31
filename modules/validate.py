@@ -9,10 +9,12 @@ class VALIDATE:
     def __init__(self):
         self.checks = {
             'GPS_DEVICE': 1 << 0,
-            'GPS_OUTPUT': 1 << 1,
-            'FT232_DEVICE': 1 << 2,
-            'FT232_OUTPUT': 1 << 3,
+            'GPS_CONNECTED': 1 << 1,
+            'GPS_OUTPUT': 1 << 2,
+
+            'FT232_DEVICE': 1 << 3,
             'FT232_CONNECTED': 1 << 4,
+            'FT232_OUTPUT': 1 << 5,
         }
         self.devices_list = {}
         self.validated = 0b0000000
@@ -38,7 +40,7 @@ class VALIDATE:
 
         try:
             lines_read = 0
-            while lines_read < 100:  # Limit the number of lines read
+            while lines_read < 100:
                 line = process.stdout.readline()  # type: ignore
                 if line:
                     json_data = json.loads(line.strip())
@@ -47,8 +49,16 @@ class VALIDATE:
                         for data in devices:
                             path = data.get('path', 'N/A')
                             if path == self.devices_list.get('GPS'):
-                                self.validated |= self.checks['GPS_OUTPUT']
+                                self.validated |= self.checks['GPS_CONNECTED']
                                 print(f"GPS Connection Status: Available")
+                                return
+                    devices = json_data.get('sky', [])
+                    if devices:
+                        for data in devices:
+                            path = data.get('lat', 'N/A')
+                            if path == self.devices_list.get('GPS'):
+                                self.validated |= self.checks['GPS_OUTPUT']
+                                print(f"GPS Output: Valid")
                                 lines_read = 100
                                 return
                 lines_read += 1
