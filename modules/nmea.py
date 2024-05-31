@@ -30,7 +30,7 @@ class NMEA:
         ix = round(degrees / 22.5) % 16
         return dirs[ix]
 
-    def start_gps(self):
+    def start_gps(self,insert=False):
         process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         try:
@@ -41,21 +41,20 @@ class NMEA:
                         json_data = json.loads(line.strip())
 
                         if json_data["class"] == "TPV":
-                            lat = json_data.get('lat', 'N/A')
-                            lon = json_data.get('lon', 'N/A')
-                            speed = json_data.get('speed', 'N/A')
-                            magtrack = json_data.get('magtrack', 'N/A')
-                            # direction = self.get_cardinal_direction(magtrack)
 
-                            print(f"Maps:       https://www.google.com/maps?q={lat},{lon}")
-                            print(f"Latitude:   {lat}")
-                            print(f"Longitude:  {lon}")
-                            print(f"Speed:      {speed}")
-                            print(f"Magtrack:   {magtrack}°")
-                            # print(f"Direction:  {direction}")
-                            print(f"\n")
+                            data = []
+                            data.append({
+                                'lat': json_data.get('lat', 'N/A'),
+                                'lon': json_data.get('lon', 'N/A'),
+                                'speed': json_data.get('speed', 'N/A'),
+                                'magtrack': json_data.get('magtrack', 'N/A'),
+                                'direction': self.get_cardinal_direction(json_data.get('magtrack', '0'))
+                            })
 
-
+                            print(data)
+                            
+                            if json_data.get('lat', 'N/A') != 'N/A' and json_data.get('lon', 'N/A') != 'N/A':
+                                self.insert_into_db(data)
 
                         elif json_data["class"] == "SKY":
                             nSat = json_data.get('nSat', 'N/A')
@@ -79,7 +78,7 @@ class NMEA:
             process.wait()
             self.close_db()
 
-    def write_to_db(self, data):
+    def insert_into_db(self, data):
         # Insert data into the table
         self.cursor.execute('''
             INSERT INTO track (lat, lon, speed, magtrack, direction)
