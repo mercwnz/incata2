@@ -40,7 +40,7 @@ class VALIDATE:
 
         try:
             lines_read = 0
-            while lines_read < 100:
+            while True:
                 line = process.stdout.readline()  # type: ignore
                 if line:
                     json_data = json.loads(line.strip())
@@ -53,19 +53,7 @@ class VALIDATE:
                                 print(f"GPS Connection Status: Available")
                                 return
                     print(json_data)
-                    devices = json_data.get('sky', [])
-                    if devices:
-                        for data in devices:
-                            lat = data.get('lat', 'N/A')
-                            print(f"{lat} : {isinstance(lat, float)}")
-                            if isinstance(lat, float):
-                                self.validated |= self.checks['GPS_OUTPUT']
-                                print(f"GPS Output: Valid")
-                                lines_read = 100
-                                return
-                            else:
-                                print("nope")
-                lines_read += 1
+                # lines_read += 1
 
         except KeyboardInterrupt:
             print("Stopping GPS read...")
