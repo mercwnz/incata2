@@ -33,20 +33,19 @@ class VALIDATE:
             if "GPS" in port.description:
                 self.validated |= self.checks['GPS_DEVICE']
                 self.devices_list['GPS'] = port.device
+                print(f"GPS Device Found: {self.devices_list['GPS']}")
             if "FT232" in port.description:
                 self.validated |= self.checks['FT232_DEVICE']
                 self.devices_list['FT232'] = port.device
+                print(f"OBD Device Found: {self.devices_list['GPS']}")
         
         return self.devices_list
     
     def gps_output(self):
         if self.validated & self.checks['GPS_DEVICE']:
-            print("match")
-            process = subprocess.Popen(['gpspipe', '-w', '-n', '10'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
+            process = subprocess.Popen(['gpspipe', '-w', '-n', '20'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             try:
-                lines_read = 0
-                while lines_read < 100 and not (
+                while not (
                     (self.validated & self.checks['GPS_CONNECTED']) and
                     (self.validated & self.checks['GPS_OUTPUT'])
                 ):
@@ -58,7 +57,6 @@ class VALIDATE:
                                 self.validated |= self.checks['GPS_CONNECTED']
                             elif json_data['class'] == 'TPV':
                                 self.validated |= self.checks['GPS_OUTPUT']
-                        lines_read += 1
 
             except KeyboardInterrupt:
                 print("Stopping GPS read...")
