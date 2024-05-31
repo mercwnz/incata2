@@ -13,7 +13,7 @@ class NMEA:
     def create_table(self):
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS track (
-                timestamp TEXT,
+                timestamp TEXT UNIQUE,
                 lat REAL,
                 lon REAL,
                 speed INTEGER,
@@ -34,7 +34,7 @@ class NMEA:
 
                         if json_data["class"] == "TPV":
                             data = {
-                                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                'timestamp': json_data.get('time', None),
                                 'lat': json_data.get('lat', None),
                                 'lon': json_data.get('lon', None),
                                 'speed': json_data.get('speed', None),
@@ -66,11 +66,15 @@ class NMEA:
             self.close_db()
 
     def insert_into_db(self, data):
-        self.cursor.execute('''
-            INSERT INTO track (timestamp, lat, lon, speed, magtrack)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (data['timestamp'], data['lat'], data['lon'], data['speed'], data['magtrack']))
-        self.conn.commit()
+        try:
+            self.cursor.execute('''
+                INSERT INTO track (timestamp, lat, lon, speed, magtrack)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (data['timestamp'], data['lat'], data['lon'], data['speed'], data['magtrack']))
+            self.conn.commit()
+        except sqlite3.IntegrityError as e:
+            print(f"Failed to insert data into database: {e}")
+
 
     def close_db(self):
         self.conn.close()
