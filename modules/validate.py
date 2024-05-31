@@ -53,6 +53,7 @@ class VALIDATE:
                     if line:
                         json_data = json.loads(line.strip())
                         if json_data['class'] == 'DEVICE':
+                            print(json_data['class'])
                             devices = json_data.get('devices', [])
                             if devices:
                                 print(devices)
