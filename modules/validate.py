@@ -36,7 +36,7 @@ class VALIDATE:
         return self.devices_list
     
     def gps_output(self):
-        if self.checks['GPS_DEVICE']:
+        if self.validated & self.checks['GPS_DEVICE']:
             process = subprocess.Popen(['gpspipe', '-w -n 10'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
             try:
