@@ -5,10 +5,6 @@ import subprocess
 import obd
 from obd import OBDStatus
 
-import serial.tools.list_ports
-import subprocess
-import json
-
 class VALIDATE:
     def __init__(self):
         self.checks = {
@@ -37,7 +33,7 @@ class VALIDATE:
             if "FT232" in port.description:
                 self.validated |= self.checks['FT232_DEVICE']
                 self.devices_list['FT232'] = port.device
-                print(f"OBD Device Found: {self.devices_list['GPS']}")
+                print(f"OBD Device Found: {self.devices_list['FT232']}")
         
         return self.devices_list
     
