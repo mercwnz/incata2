@@ -5,6 +5,10 @@ import subprocess
 import obd
 from obd import OBDStatus
 
+import serial.tools.list_ports
+import subprocess
+import json
+
 class VALIDATE:
     def __init__(self):
         self.checks = {
@@ -37,7 +41,7 @@ class VALIDATE:
     
     def gps_output(self):
         if self.validated & self.checks['GPS_DEVICE']:
-            process = subprocess.Popen(['gpspipe', '-w -n 10'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            process = subprocess.Popen(['gpspipe', '-w', '-n', '10'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
             try:
                 lines_read = 0
@@ -48,15 +52,18 @@ class VALIDATE:
                     line = process.stdout.readline()  # type: ignore
                     if line:
                         json_data = json.loads(line.strip())
-                        print(json_data['class'])
-                    lines_read += 1
+                        if 'class' in json_data:
+                            if json_data['class'] == 'DEVICE':
+                                self.validated |= self.checks['GPS_CONNECTED']
+                            elif json_data['class'] == 'TPV':
+                                self.validated |= self.checks['GPS_OUTPUT']
+                        lines_read += 1
 
             except KeyboardInterrupt:
                 print("Stopping GPS read...")
             finally:
                 process.terminate()
                 process.wait()
-
 
     def ft232_output(self):
         port = self.devices_list.get('FT232')
