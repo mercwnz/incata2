@@ -56,6 +56,7 @@ class VALIDATE:
                     if devices:
                         for data in devices:
                             lat = data.get('lat', 'N/A')
+                            print(f"{lat} : {isinstance(lat, float)}")
                             if isinstance(lat, float):
                                 self.validated |= self.checks['GPS_OUTPUT']
                                 print(f"GPS Output: Valid")
