@@ -48,7 +48,7 @@ class VALIDATE:
                             devices = json_data.get('devices', 'N/A')
                             path = devices.get('path', 'N/A')
                             driver = devices.get('driver', '').lower()
-                        
+                            print(f"{devices} : {path} : {driver}")
                             if path == self.devices_list['GPS'] and driver == 'nmea0183':
                                 print(json_data)
                                 self.validated |= self.checks['GPS_OUTPUT']
