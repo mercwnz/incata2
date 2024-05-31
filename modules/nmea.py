@@ -35,19 +35,19 @@ class NMEA:
                         if json_data["class"] == "TPV":
                             data = {
                                 'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                                'lat': json_data.get('lat', 'N/A'),
-                                'lon': json_data.get('lon', 'N/A'),
-                                'speed': json_data.get('speed', 'N/A'),
-                                'magtrack': json_data.get('magtrack', 'N/A')
+                                'lat': json_data.get('lat', None),
+                                'lon': json_data.get('lon', None),
+                                'speed': json_data.get('speed', None),
+                                'magtrack': json_data.get('magtrack', None)
                             }
 
-                            if data['lat'] != 'N/A' and data['lon'] != 'N/A' and insert:
+                            if data['lat'] and data['lon'] and insert:
                                 print(f"{data}")
                                 self.insert_into_db(data)
 
                         elif json_data["class"] == "SKY":
-                            nSat = json_data.get('nSat', 'N/A')
-                            uSat = json_data.get('uSat', 'N/A')
+                            nSat = json_data.get('nSat', None)
+                            uSat = json_data.get('uSat', None)
                             print(f"Satellites:   {uSat}/{nSat}")
 
                         elif debug:
@@ -68,7 +68,7 @@ class NMEA:
     def insert_into_db(self, data):
         self.cursor.execute('''
             INSERT INTO track (timestamp, lat, lon, speed, magtrack)
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?)
         ''', (data['timestamp'], data['lat'], data['lon'], data['speed'], data['magtrack']))
         self.conn.commit()
 
