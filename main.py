@@ -8,4 +8,4 @@ if __name__ == "__main__":
     print(f"Validate result\t{bin(validate.result())}")
 
 nmea = NMEA()
-nmea.start_gps()
+nmea.start_gps(insert=True)

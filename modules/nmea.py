@@ -55,9 +55,9 @@ class NMEA:
                                 'direction': self.get_cardinal_direction(json_data.get('magtrack', '0'))
                             })
 
-                            print(data)
                             
                             if json_data.get('lat', 'N/A') != 'N/A' and json_data.get('lon', 'N/A') != 'N/A' and insert:
+                                print(data)
                                 self.insert_into_db(data)
 
                         elif json_data["class"] == "SKY":
