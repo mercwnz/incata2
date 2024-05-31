@@ -3,17 +3,16 @@ import serial
 import serial.tools.list_ports
 import subprocess
 import obd
-
 from obd import OBDStatus
+
 class VALIDATE:
     def __init__(self):
         self.checks = {
             'GPS_DEVICE': 1 << 0,
             'GPS_OUTPUT': 1 << 1,
-
             'FT232_DEVICE': 1 << 2,
             'FT232_OUTPUT': 1 << 3,
-            'FT232_CONNECTED' : 1 << 4,
+            'FT232_CONNECTED': 1 << 4,
         }
         self.devices_list = {}
         self.validated = 0b0000000
@@ -38,7 +37,8 @@ class VALIDATE:
         process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         try:
-            while True:
+            lines_read = 0
+            while lines_read < 100:  # Limit the number of lines read
                 line = process.stdout.readline()  # type: ignore
                 if line:
                     json_data = json.loads(line.strip())
@@ -50,11 +50,10 @@ class VALIDATE:
                                 path = data.get('path', 'N/A')
                                 driver = data.get('driver', 'N/A')
 
-                                if path == self.devices_list['GPS'] and driver == 'NMEA0183':
+                                if path == self.devices_list.get('GPS') and driver == 'NMEA0183':
                                     self.validated |= self.checks['GPS_OUTPUT']
-                                    break
-                        else:
-                            break
+                                    return
+                lines_read += 1
 
         except KeyboardInterrupt:
             print("Stopping GPS data read...")
@@ -64,7 +63,12 @@ class VALIDATE:
 
 
     def ft232_output(self):
-        port = self.devices_list['FT232']
+        port = self.devices_list.get('FT232')
+        if not port:
+            print("FT232 device not found")
+            return
+        
+        connection = None  # Initialize the connection variable
         try:
             obd.logger.removeHandler(obd.console_handler)
             connection = obd.OBD(port)
@@ -86,14 +90,21 @@ class VALIDATE:
                 raise Exception("Device Not Connected")
             
             else:
-                raise Exception("Failed To Connect")               
+                raise Exception("Failed To Connect")
 
-            if connection:
+            if connection.status() in [OBDStatus.CAR_CONNECTED, OBDStatus.OBD_CONNECTED, OBDStatus.ELM_CONNECTED]:
                 self.validated |= self.checks['FT232_OUTPUT']
+                
+        except Exception as e:
+            print(f"Caught an exception: {e}")
+        finally:
+            if connection:
                 connection.close()
                 
-        except ValueError as e:
-            print(f"Caught an exception: {e}")
-            
     def result(self):
         return self.validated
+
+# Example usage
+validate = VALIDATE()
+result = validate.result()
+print(f"Validation result: {bin(result)}")
