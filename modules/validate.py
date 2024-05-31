@@ -1,6 +1,5 @@
 import serial
 import serial.tools.list_ports
-import logging
 import obd
 from obd import OBDStatus
 class VALIDATE:
@@ -27,10 +26,6 @@ class VALIDATE:
         return self.devices_list
     
     def outputs(self):
-        obd_logger = logging.getLogger('obd')
-        obd_logger.setLevel(logging.DEBUG)
-        obd_logger.propagate = False
-
         port = self.devices_list['FT232']
         try:
             connection = obd.OBD(port)
@@ -47,11 +42,9 @@ class VALIDATE:
                 print("Failed to connect to OBD2 device")              
             if connection:
                 self.validated |= self.checks['OUTPUT_FT232']
+                connection.close()
         except:
             return False
     
     def result(self):
         return self.validated
-
-# Example usage
-
