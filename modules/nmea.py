@@ -1,5 +1,6 @@
 import subprocess
 import json
+import sqlite3
 
 class NMEA:
    
@@ -56,3 +57,31 @@ class NMEA:
         finally:
             process.terminate()
             process.wait()
+
+    def write_to_db(self, data):
+        conn = sqlite3.connect('example.db')
+        cursor = conn.cursor()
+
+        # Create a table (if it doesn't already exist)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS track (
+                lat REAL,
+                lon REAL,
+                speed INTEGER,
+                magtrack REAL,
+                direction TEXT
+            )
+        ''')
+        conn.commit()
+
+        # Insert data into the table
+        for entry in data:
+            cursor.execute('''
+                INSERT INTO track (lat, lon, speed, magtrack, direction)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (entry['lat'], entry['lon'], entry['speed'], entry['magtrack'], entry['direction']))
+
+        conn.commit()
+
+        # Close the connection
+        conn.close()
