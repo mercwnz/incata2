@@ -44,14 +44,15 @@ class VALIDATE:
                     json_data = json.loads(line.strip())
                     
                     if json_data["class"] == "DEVICES":
+                        print(line)
                         devices = json_data.get('devices', [])
                         for data in devices:
                             path = data.get('path', 'N/A')
                             driver = data.get('driver', 'N/A')
-                            
+
                             if path == self.devices_list['GPS'] and driver == 'NMEA0183':
                                 self.validated |= self.checks['GPS_OUTPUT']
-                                return 
+                                break
 
         except KeyboardInterrupt:
             print("Stopping GPS data read...")
