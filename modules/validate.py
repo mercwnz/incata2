@@ -36,30 +36,31 @@ class VALIDATE:
         return self.devices_list
     
     def gps_output(self):
-        process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if self.checks['GPS_DEVICE']:
+            process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-        try:
-            lines_read = 0
-            while True:
-                line = process.stdout.readline()  # type: ignore
-                if line:
-                    json_data = json.loads(line.strip())
-                    devices = json_data.get('devices', [])
-                    if devices:
-                        for data in devices:
-                            path = data.get('path', 'N/A')
-                            if path == self.devices_list.get('GPS'):
-                                self.validated |= self.checks['GPS_CONNECTED']
-                                print(f"GPS Connection Status: Available")
-                                return
-                    print(json_data)
-                # lines_read += 1
+            try:
+                lines_read = 0
+                while lines_read < 100 or (self.validated & (self.checks['GPS_CONNECTED'] and self.checks['GPS_OUTPUT'])) :
+                    line = process.stdout.readline()  # type: ignore
+                    if line:
+                        json_data = json.loads(line.strip())
+                        devices = json_data.get('devices', [])
+                        if devices:
+                            for data in devices:
+                                path = data.get('path', 'N/A')
+                                if path == self.devices_list.get('GPS'):
+                                    self.validated |= self.checks['GPS_CONNECTED']
+                                    print(f"GPS Connection Status: Available")
+                                    return
+                        print(json_data)
+                    lines_read += 1
 
-        except KeyboardInterrupt:
-            print("Stopping GPS read...")
-        finally:
-            process.terminate()
-            process.wait()
+            except KeyboardInterrupt:
+                print("Stopping GPS read...")
+            finally:
+                process.terminate()
+                process.wait()
 
 
     def ft232_output(self):
