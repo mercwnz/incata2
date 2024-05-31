@@ -41,15 +41,15 @@ class VALIDATE:
             while lines_read < 100:  # Limit the number of lines read
                 line = process.stdout.readline()  # type: ignore
                 if line:
-                    json_data = json.loads(line.strip())
-                    devices = json_data.get('devices', [])
+                    devices = json.loads(line.strip()).get('devices', [])
                     if devices:
+                        print(devices['path'])
                         for data in devices:
                             path = data.get('path', 'N/A')
                             if path == self.devices_list.get('GPS'):
                                 self.validated |= self.checks['GPS_OUTPUT']
                                 print(f"GPS Connection Status: Available")
-                                break
+                                return
                 lines_read += 1
 
         except KeyboardInterrupt:
