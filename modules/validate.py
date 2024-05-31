@@ -44,7 +44,7 @@ class VALIDATE:
                     json_data = json.loads(line.strip())
                     devices = json_data.get('devices', [])
                     if devices:
-                        print(json_data)
+                        print(devices)
                         for data in devices:
                             path = data.get('path', 'N/A')
                             driver = data.get('driver', 'N/A')
