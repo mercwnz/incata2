@@ -34,7 +34,7 @@ class VALIDATE:
         return self.devices_list
     
     def gps_output(self):
-        process = subprocess.Popen(['gpspipe', '-w -n 100'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         try:
             lines_read = 0
@@ -42,19 +42,17 @@ class VALIDATE:
                 line = process.stdout.readline()  # type: ignore
                 if line:
                     json_data = json.loads(line.strip())
-                    
-                    if json_data["class"] == "DEVICES":
+                    devices = json_data.get('devices', [])
+                    if devices:
                         print(json_data)
-                        devices = json_data.get('devices', [])
-                        if devices:
-                            for data in devices:
-                                path = data.get('path', 'N/A')
-                                driver = data.get('driver', 'N/A')
+                        for data in devices:
+                            path = data.get('path', 'N/A')
+                            driver = data.get('driver', 'N/A')
 
-                                if path == self.devices_list.get('GPS') and driver == 'NMEA0183':
-                                    self.validated |= self.checks['GPS_OUTPUT']
-                                    print(f"GPS Connection Status: Available")
-                                    break
+                            if path == self.devices_list.get('GPS') and driver == 'NMEA0183':
+                                self.validated |= self.checks['GPS_OUTPUT']
+                                print(f"GPS Connection Status: Available")
+                                break
                 lines_read += 1
 
         except KeyboardInterrupt:
