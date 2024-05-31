@@ -52,8 +52,8 @@ class VALIDATE:
                                 self.validated |= self.checks['GPS_CONNECTED']
                                 print(f"GPS Connection Status: Available")
                                 return
+                    print(json_data)
                     devices = json_data.get('sky', [])
-                    print(devices)
                     if devices:
                         for data in devices:
                             lat = data.get('lat', 'N/A')
