@@ -53,6 +53,7 @@ class VALIDATE:
                                 print(f"GPS Connection Status: Available")
                                 return
                     devices = json_data.get('sky', [])
+                    print(devices)
                     if devices:
                         for data in devices:
                             lat = data.get('lat', 'N/A')
@@ -62,6 +63,8 @@ class VALIDATE:
                                 print(f"GPS Output: Valid")
                                 lines_read = 100
                                 return
+                            else:
+                                print("nope")
                 lines_read += 1
 
         except KeyboardInterrupt:
