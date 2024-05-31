@@ -33,16 +33,15 @@ class NMEA:
 
                         if json_data["class"] == "TPV":
 
-                            data = []
-                            data.append({
+                            data = {
                                 'lat': json_data.get('lat', 'N/A'),
                                 'lon': json_data.get('lon', 'N/A'),
                                 'speed': json_data.get('speed', 'N/A'),
                                 'magtrack': json_data.get('magtrack', 'N/A')
-                            })
+                            }
 
-                            if json_data.get('lat', 'N/A') != 'N/A' and json_data.get('lon', 'N/A') != 'N/A' and insert:
-                                print(data)
+                            if data['lat'] != 'N/A' and data['lon'] != 'N/A' and insert:
+                                print(f"{json.dumps(data, indent=4)}")
                                 self.insert_into_db(data)
 
                         elif json_data["class"] == "SKY":
