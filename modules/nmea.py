@@ -48,16 +48,11 @@ class NMEA:
                             print(f"{json.dumps(json_data, indent=4)}")
 
                     except json.JSONDecodeError:
-                        raise Exception(f"Failed to decode JSON: {line.strip()}")               
+                        print(f"Failed to decode JSON: {line.strip()}")
                 else:
                     break
-
         except KeyboardInterrupt:
-            raise Exception("Stopping GPS data read...")
-
-        except ValueError as e:
-            print(f"Caught an exception: {e}")
-
+            print("Stopping GPS data read...")
         finally:
             process.terminate()
             process.wait()
