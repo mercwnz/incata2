@@ -36,8 +36,6 @@ class NMEA:
                             print(f"Direction:  {self.get_cardinal_direction(magtrack)}")
                             print(f"\n")
 
-                            return 
-
                         elif json_data["class"] == "SKY":
                             nSat = json_data.get('nSat', 'N/A')
                             uSat = json_data.get('uSat', 'N/A')

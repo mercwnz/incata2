@@ -28,6 +28,7 @@ class VALIDATE:
     def outputs(self):
         port = self.devices_list['FT232']
         try:
+            obd.logger.removeHandler(obd.console_handler)
             connection = obd.OBD(port)
             status = connection.status()
             if status == OBDStatus.CAR_CONNECTED:
