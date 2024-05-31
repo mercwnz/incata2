@@ -16,23 +16,10 @@ class NMEA:
                 lat REAL,
                 lon REAL,
                 speed INTEGER,
-                magtrack REAL,
-                direction TEXT
+                magtrack REAL
             )
         ''')
         self.conn.commit()
-
-    def get_cardinal_direction(self, degrees):
-        dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-                "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
-        if degrees is None:
-            return "N/A"
-        try:
-            degrees = float(degrees)
-        except ValueError:
-            return "N/A"
-        ix = round(degrees / 22.5) % 16
-        return dirs[ix]
 
     def start_gps(self, insert=False):
         process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -51,11 +38,9 @@ class NMEA:
                                 'lat': json_data.get('lat', 'N/A'),
                                 'lon': json_data.get('lon', 'N/A'),
                                 'speed': json_data.get('speed', 'N/A'),
-                                'magtrack': json_data.get('magtrack', 'N/A'),
-                                'direction': self.get_cardinal_direction(json_data.get('magtrack', '0'))
+                                'magtrack': json_data.get('magtrack', 'N/A')
                             })
 
-                            
                             if json_data.get('lat', 'N/A') != 'N/A' and json_data.get('lon', 'N/A') != 'N/A' and insert:
                                 print(data)
                                 self.insert_into_db(data)
@@ -83,10 +68,11 @@ class NMEA:
             self.close_db()
 
     def insert_into_db(self, data):
-        self.cursor.execute('''
-            INSERT INTO track (lat, lon, speed, magtrack, direction)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (data['lat'], data['lon'], data['speed'], data['magtrack'], data['direction']))
+        for entry in data:
+            self.cursor.execute('''
+                INSERT INTO track (lat, lon, speed, magtrack)
+                VALUES (?, ?, ?, ?)
+            ''', (entry['lat'], entry['lon'], entry['speed'], entry['magtrack']))
         self.conn.commit()
 
     def close_db(self):
