@@ -45,14 +45,14 @@ class NMEA:
                             lon = json_data.get('lon', 'N/A')
                             speed = json_data.get('speed', 'N/A')
                             magtrack = json_data.get('magtrack', 'N/A')
-                            direction = self.get_cardinal_direction(magtrack)
+                            # direction = self.get_cardinal_direction(magtrack)
 
                             print(f"Maps:       https://www.google.com/maps?q={lat},{lon}")
                             print(f"Latitude:   {lat}")
                             print(f"Longitude:  {lon}")
                             print(f"Speed:      {round(speed * 3.6)} km/h")
                             print(f"Magtrack:   {round(magtrack)}°")
-                            print(f"Direction:  {direction}")
+                            # print(f"Direction:  {direction}")
                             print(f"\n")
 
 
