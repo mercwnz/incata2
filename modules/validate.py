@@ -61,7 +61,7 @@ class VALIDATE:
                             print(f"GPS Validated")
 
             except KeyboardInterrupt:
-                print("Stopping GPS read...")
+                print("GPS validation aborted...")
             finally:
                 process.terminate()
                 process.wait()
