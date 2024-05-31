@@ -8,7 +8,8 @@ class NMEA:
                 "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
         if degrees is None:
             return "N/A"
-        return dirs[(round(degrees / 22.5) % 16)]
+        ix = round(degrees / 22.5) % 16
+        return dirs[ix]
 
     def read_gps_json(self):
 
