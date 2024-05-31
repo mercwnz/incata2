@@ -47,7 +47,7 @@ class VALIDATE:
                     (self.validated & self.checks['GPS_CONNECTED']) and
                     (self.validated & self.checks['GPS_OUTPUT'])
                 ):
-                    print("looking")
+                    print("GPS Looking...")
                     lines_read += 1
                     line = process.stdout.readline()  # type: ignore
                     if line:
@@ -57,7 +57,8 @@ class VALIDATE:
                             if devices:
                                 self.validated |= self.checks['GPS_CONNECTED']
                         elif json_data['class'] == 'TPV':
-                                self.validated |= self.checks['GPS_OUTPUT']
+                            self.validated |= self.checks['GPS_OUTPUT']
+                            print(f"GPS Validated")
 
             except KeyboardInterrupt:
                 print("Stopping GPS read...")
@@ -102,6 +103,7 @@ class VALIDATE:
             print(f"Caught an exception: {e}")
         finally:
             if connection:
+                print(f"OBD Validated")
                 connection.close()
                 
     def result(self):
