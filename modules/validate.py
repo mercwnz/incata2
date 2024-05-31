@@ -103,8 +103,3 @@ class VALIDATE:
                 
     def result(self):
         return self.validated
-
-# Example usage
-validate = VALIDATE()
-result = validate.result()
-print(f"Validation result: {bin(result)}")
