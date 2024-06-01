@@ -1,5 +1,6 @@
 from smbus2 import SMBus
 import time
+import sqlite3
 
 # Config Register (R/W)
 _REG_CONFIG                 = 0x00
@@ -67,15 +68,15 @@ class INA219:
         self._power_lsb = 0
         self.set_calibration_32V_2A()
 
-    def read(self,address):
+    def read(self, address):
         data = self.bus.read_i2c_block_data(self.addr, address, 2)
-        return ((data[0] * 256 ) + data[1])
+        return ((data[0] * 256) + data[1])
 
-    def write(self,address,data):
-        temp = [0,0]
+    def write(self, address, data):
+        temp = [0, 0]
         temp[1] = data & 0xFF
-        temp[0] =(data & 0xFF00) >> 8
-        self.bus.write_i2c_block_data(self.addr,address,temp)
+        temp[0] = (data & 0xFF00) >> 8
+        self.bus.write_i2c_block_data(self.addr, address, temp)
 
     def set_calibration_32V_2A(self):
         """Configures to INA219 to be able to measure up to 32V and 2A of current. Counter
@@ -148,7 +149,7 @@ class INA219:
         # MaximumPower = 102.4W
 
         # Set Calibration register to 'Cal' calculated above
-        self.write(_REG_CALIBRATION,self._cal_value)
+        self.write(_REG_CALIBRATION, self._cal_value)
 
         # Set Config register to take into account the settings above
         self.bus_voltage_range = BusVoltageRange.RANGE_32V
@@ -161,17 +162,17 @@ class INA219:
                       self.bus_adc_resolution << 7 | \
                       self.shunt_adc_resolution << 3 | \
                       self.mode
-        self.write(_REG_CONFIG,self.config)
+        self.write(_REG_CONFIG, self.config)
 
     def getShuntVoltage_mV(self):
-        self.write(_REG_CALIBRATION,self._cal_value)
+        self.write(_REG_CALIBRATION, self._cal_value)
         value = self.read(_REG_SHUNTVOLTAGE)
         if value > 32767:
             value -= 65535
         return value * 0.01
 
     def getBusVoltage_V(self):
-        self.write(_REG_CALIBRATION,self._cal_value)
+        self.write(_REG_CALIBRATION, self._cal_value)
         self.read(_REG_BUSVOLTAGE)
         return (self.read(_REG_BUSVOLTAGE) >> 3) * 0.004
 
@@ -182,32 +183,54 @@ class INA219:
         return value * self._current_lsb
 
     def getPower_W(self):
-        self.write(_REG_CALIBRATION,self._cal_value)
+        self.write(_REG_CALIBRATION, self._cal_value)
         value = self.read(_REG_POWER)
         if value > 32767:
             value -= 65535
         return value * self._power_lsb
         
-if __name__=='__main__':
-
+if __name__ == '__main__':
     # Create an INA219 instance.
     ina219 = INA219(addr=0x42)
-    while True:
-        bus_voltage = ina219.getBusVoltage_V()             # voltage on V- (load side)
-        shunt_voltage = ina219.getShuntVoltage_mV() / 1000 # voltage between V+ and V- across the shunt
-        current = ina219.getCurrent_mA()                   # current in mA
-        power = ina219.getPower_W()                        # power in W
-        p = (bus_voltage - 6)/2.4*100
-        if(p > 100):p = 100
-        if(p < 0):p = 0
 
-        # INA219 measure bus voltage on the load side. So PSU voltage = bus_voltage + shunt_voltage
-        #print("PSU Voltage:   {:6.3f} V".format(bus_voltage + shunt_voltage))
-        #print("Shunt Voltage: {:9.6f} V".format(shunt_voltage))
-        print("Load Voltage:  {:6.3f} V".format(bus_voltage))
-        print("Current:       {:9.6f} A".format(current/1000))
-        print("Power:         {:6.3f} W".format(power))
-        print("Percent:       {:3.1f}%".format(p))
-        print("")
+    # Connect to SQLite database (or create it if it doesn't exist)
+    conn = sqlite3.connect('battery.db')
+    c = conn.cursor()
 
-        time.sleep(5)
+    # Create table if it doesn't exist
+    c.execute('''CREATE TABLE IF NOT EXISTS readings
+                 (timestamp TEXT, psu_voltage REAL, shunt_voltage REAL, load_voltage REAL, current REAL, power REAL, percent REAL)''')
+
+    try:
+        while True:
+            bus_voltage = ina219.getBusVoltage_V()             # voltage on V- (load side)
+            shunt_voltage = ina219.getShuntVoltage_mV() / 1000 # voltage between V+ and V- across the shunt
+            current = ina219.getCurrent_mA()                   # current in mA
+            power = ina219.getPower_W()                        # power in W
+            p = (bus_voltage - 6)/2.4*100
+            if(p > 100): p = 100
+            if(p < 0): p = 0
+
+            # INA219 measure bus voltage on the load side. So PSU voltage = bus_voltage + shunt_voltage
+            psu_voltage = bus_voltage + shunt_voltage
+            load_voltage = bus_voltage
+
+            print("PSU Voltage:   {:6.3f} V".format(psu_voltage))
+            print("Shunt Voltage: {:9.6f} V".format(shunt_voltage))
+            print("Load Voltage:  {:6.3f} V".format(load_voltage))
+            print("Current:       {:9.6f} A".format(current/1000))
+            print("Power:         {:6.3f} W".format(power))
+            print("Percent:       {:3.1f}%".format(p))
+            print("")
+
+            # Insert data into the database
+            c.execute("INSERT INTO readings (timestamp, psu_voltage, shunt_voltage, load_voltage, current, power, percent) VALUES (datetime('now'), ?, ?, ?, ?, ?, ?)",
+                      (psu_voltage, shunt_voltage, load_voltage, current/1000, power, p))
+            conn.commit()
+
+            time.sleep(5)
+
+    except KeyboardInterrupt:
+        print("Program interrupted. Closing the database connection.")
+    finally:
+        conn.close()
