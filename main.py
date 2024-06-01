@@ -29,5 +29,7 @@ if __name__ == "__main__":
     obd2 = OBD2()
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.submit(nmea.start_gps, True)
+        # Run GPS data retrieval and insertion
+        executor.submit(nmea.start_gps, True, False)
+        # Run OBD-II data retrieval
         executor.submit(run_obd_tasks, obd2)
