@@ -1,7 +1,7 @@
 from modules.validate import VALIDATE
 from modules.nmea import NMEA
 from modules.obd2 import OBD2
-import concurrent.futures
+from threading import Thread
 import time
 
 def run_obd_tasks(obd2):
@@ -28,8 +28,20 @@ if __name__ == "__main__":
     nmea = NMEA()
     obd2 = OBD2()
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        # Run GPS data retrieval and insertion
-        executor.submit(nmea.start_gps, True, False)
-        # Run OBD-II data retrieval
-        executor.submit(run_obd_tasks, obd2)
+    # Create threads for the GPS and OBD-II tasks
+    t1 = Thread(target=nmea.start_gps, args=(True, False))
+    t2 = Thread(target=run_obd_tasks, args=(obd2,))
+
+    try:
+        # Start the threads
+        t1.start()
+        t2.start()
+
+        # Wait for both threads to complete
+        t1.join()
+        t2.join()
+    except KeyboardInterrupt:
+        print("Stopping all tasks...")
+        # Properly handle shutdown
+        t1.join()
+        t2.join()
