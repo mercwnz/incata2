@@ -102,7 +102,7 @@ class NMEA:
             ''', (data['timestamp'], data['lat'], data['lon'], data['speed'], data['magtrack'], data['alt']))
             self.conn.commit()
         except sqlite3.IntegrityError as e:
-            print(f"Failed to insert data into database: {e}")
+            print()
         except sqlite3.Error as e:
             print(f"SQLite error during insert: {e}")
         finally:
