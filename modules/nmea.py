@@ -2,63 +2,87 @@ import subprocess
 import json
 import sqlite3
 from datetime import datetime
+from typing import Optional
 
 class NMEA:
-
     def __init__(self):
-        self.conn = sqlite3.connect('track.db')
-        self.cursor = self.conn.cursor()
-        self.create_table()
+        self.conn: Optional[sqlite3.Connection] = None
+        self.cursor: Optional[sqlite3.Cursor] = None
 
     def create_table(self):
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS track (
-                timestamp TEXT UNIQUE,
-                lat REAL,
-                lon REAL,
-                speed INTEGER,
-                magtrack REAL,
-                alt REAL
-            )
-        ''')
-        self.conn.commit()
+        if self.cursor:
+            self.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS track (
+                    timestamp TEXT UNIQUE,
+                    lat REAL,
+                    lon REAL,
+                    speed INTEGER,
+                    magtrack REAL,
+                    alt REAL
+                )
+            ''')
+            if self.conn:
+                self.conn.commit()
+            else:
+                print("Connection is not initialized in create_table.")
+        else:
+            print("Cursor is not initialized in create_table.")
 
     def start_gps(self, insert=False, debug=False):
-        process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        try:
+            process = subprocess.Popen(['gpspipe', '-w'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        except Exception as e:
+            print(f"Failed to start gpspipe subprocess: {e}")
+            return
+
+        if process.stdout is None:
+            print("Failed to obtain stdout from gpspipe subprocess.")
+            return
+
+        # Create SQLite connection and cursor in this thread
+        try:
+            self.conn = sqlite3.connect('track.db')
+            self.cursor = self.conn.cursor()
+            print("SQLite connection and cursor initialized.")
+            self.create_table()
+        except sqlite3.Error as e:
+            print(f"SQLite error during initialization: {e}")
+            return
 
         try:
             while True:
-                line = process.stdout.readline()  # type: ignore
-                if line:
-                    try:
-                        json_data = json.loads(line.strip())
-
-                        if json_data["class"] == "TPV":
-                            data = {
-                                'timestamp': json_data.get('time', None),
-                                'lat': json_data.get('lat', None),
-                                'lon': json_data.get('lon', None),
-                                'speed': json_data.get('speed', None),
-                                'magtrack': json_data.get('magtrack', None),
-                                'alt': json_data.get('alt', None)
-                            }
-
-                            if data['lat'] and data['lon'] and insert:
-                                self.insert_into_db(data)
-
-                        elif json_data["class"] == "SKY":
-                            nSat = json_data.get('nSat', None)
-                            uSat = json_data.get('uSat', None)
-                            print(f"Satellites:   {uSat}/{nSat}")
-
-                        elif debug:
-                            print(f"{json_data['class']}")
-                            print(f"{json.dumps(json_data, indent=4)}")
-
-                    except json.JSONDecodeError:
-                        print(f"Failed to decode JSON: {line.strip()}")
-                else:
+                line = process.stdout.readline()
+                if not line:
+                    print("No more lines from gpspipe, exiting.")
                     break
+
+                try:
+                    json_data = json.loads(line.strip())
+
+                    if json_data["class"] == "TPV":
+                        data = {
+                            'timestamp': json_data.get('time', None),
+                            'lat': json_data.get('lat', None),
+                            'lon': json_data.get('lon', None),
+                            'speed': json_data.get('speed', None),
+                            'magtrack': json_data.get('magtrack', None),
+                            'alt': json_data.get('alt', None)
+                        }
+
+                        if data['lat'] and data['lon'] and insert:
+                            self.insert_into_db(data)
+
+                    elif json_data["class"] == "SKY":
+                        nSat = json_data.get('nSat', None)
+                        uSat = json_data.get('uSat', None)
+                        print(f"Satellites:   {uSat}/{nSat}")
+
+                    elif debug:
+                        print(f"{json_data['class']}")
+                        print(f"{json.dumps(json_data, indent=4)}")
+
+                except json.JSONDecodeError:
+                    print(f"Failed to decode JSON: {line.strip()}")
         except KeyboardInterrupt:
             print("Stopping GPS data read...")
         finally:
@@ -67,6 +91,10 @@ class NMEA:
             self.close_db()
 
     def insert_into_db(self, data):
+        if not self.cursor or not self.conn:
+            print("Cursor or connection is not initialized in insert_into_db.")
+            return
+
         try:
             self.cursor.execute('''
                 INSERT INTO track (timestamp, lat, lon, speed, magtrack, alt)
@@ -74,11 +102,15 @@ class NMEA:
             ''', (data['timestamp'], data['lat'], data['lon'], data['speed'], data['magtrack'], data['alt']))
             self.conn.commit()
         except sqlite3.IntegrityError as e:
-            return
-            # print(f"Failed to insert data into database: {e}")
+            print(f"Failed to insert data into database: {e}")
+        except sqlite3.Error as e:
+            print(f"SQLite error during insert: {e}")
         finally:
-            print(f"{data}")
-
+            print(f"Data inserted: {data}")
 
     def close_db(self):
-        self.conn.close()
+        if self.conn:
+            self.conn.close()
+            print("SQLite connection closed.")
+        else:
+            print("Connection already closed or not initialized.")
