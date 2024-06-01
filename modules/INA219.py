@@ -228,7 +228,7 @@ if __name__ == '__main__':
                       (psu_voltage, shunt_voltage, load_voltage, current/1000, power, p))
             conn.commit()
 
-            time.sleep(5)
+            time.sleep(30)
 
     except KeyboardInterrupt:
         print("Program interrupted. Closing the database connection.")
