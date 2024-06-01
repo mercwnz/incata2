@@ -210,4 +210,4 @@ if __name__=='__main__':
         print("Percent:       {:3.1f}%".format(p))
         print("")
 
-        time.sleep(2)
+        time.sleep(5)
