@@ -1,7 +1,6 @@
 import subprocess
 import json
 import sqlite3
-from datetime import datetime
 from typing import Optional
 
 class NMEA:
@@ -16,7 +15,7 @@ class NMEA:
                     timestamp TEXT UNIQUE,
                     lat REAL,
                     lon REAL,
-                    speed INTEGER,
+                    speed REAL,
                     magtrack REAL,
                     alt REAL
                 )
@@ -69,8 +68,8 @@ class NMEA:
                             'alt': json_data.get('alt', None)
                         }
 
-                        if data['lat'] and data['lon'] and insert:
-                            self.insert_into_db(data)
+                        if data['timestamp'] and data['lat'] and data['lon'] and insert:
+                            self.insert_or_update_db(data)
 
                     elif json_data["class"] == "SKY":
                         nSat = json_data.get('nSat', None)
@@ -90,23 +89,26 @@ class NMEA:
             process.wait()
             self.close_db()
 
-    def insert_into_db(self, data):
+    def insert_or_update_db(self, data):
         if not self.cursor or not self.conn:
-            print("Cursor or connection is not initialized in insert_into_db.")
+            print("Cursor or connection is not initialized in insert_or_update_db.")
             return
 
         try:
             self.cursor.execute('''
                 INSERT INTO track (timestamp, lat, lon, speed, magtrack, alt)
                 VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(timestamp) DO UPDATE SET
+                    lat=excluded.lat,
+                    lon=excluded.lon,
+                    speed=excluded.speed,
+                    magtrack=excluded.magtrack,
+                    alt=excluded.alt
             ''', (data['timestamp'], data['lat'], data['lon'], data['speed'], data['magtrack'], data['alt']))
             self.conn.commit()
-        except sqlite3.IntegrityError as e:
-            print()
+            print(f"Data inserted or updated: {data}")
         except sqlite3.Error as e:
-            print(f"SQLite error during insert: {e}")
-        finally:
-            print(f"Data inserted: {data}")
+            print(f"SQLite error during insert_or_update: {e}")
 
     def close_db(self):
         if self.conn:
@@ -114,3 +116,7 @@ class NMEA:
             print("SQLite connection closed.")
         else:
             print("Connection already closed or not initialized.")
+
+# Example usage:
+nmea = NMEA()
+nmea.start_gps(insert=True, debug=True)
