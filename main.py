@@ -20,10 +20,12 @@ def run_obd_tasks(obd2):
                 time.sleep(1)  # 1 second interval between data retrieval
         except KeyboardInterrupt:
             print("OBD-II data retrieval aborted...")
+        finally:
+            obd2.stop_obd()  # Ensure any cleanup required for OBD2
 
 if __name__ == "__main__":
     validate = VALIDATE()
-    print(f"Validate result\t{bin(validate.result())}")
+    print(f"Validate result: {bin(validate.result())}")
 
     nmea = NMEA()
     obd2 = OBD2()
@@ -42,6 +44,12 @@ if __name__ == "__main__":
         t2.join()
     except KeyboardInterrupt:
         print("Stopping all tasks...")
-        # Properly handle shutdown
-        t1.join()
-        t2.join()
+    finally:
+        # Ensure threads are properly joined
+        if t1.is_alive():
+            t1.join()
+        if t2.is_alive():
+            t2.join()
+
+        # Close any resources if necessary
+        nmea.close_db()
